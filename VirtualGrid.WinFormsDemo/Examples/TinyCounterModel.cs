@@ -19,20 +19,5 @@ namespace VirtualGrid.WinFormsDemo.Examples
         {
             Count--;
         }
-
-        public void Update(object action)
-        {
-            if (action == "INCREMENT")
-            {
-                Increment();
-                return;
-            }
-
-            if (action == "DECREMENT")
-            {
-                Decrement();
-                return;
-            }
-        }
     }
 }

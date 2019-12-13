@@ -56,6 +56,19 @@ namespace VirtualGrid.Models
             return this;
         }
 
+        public VCell OnTextChanged(Action<string> action)
+        {
+            Attributes["A_ON_CHANGED"] = new Action<object>(value =>
+            {
+                var text = value as string;
+                if (text != null)
+                {
+                    action(text);
+                }
+            });
+            return this;
+        }
+
         public VCell WithReadOnly(bool isReadOnly)
         {
             Attributes["A_READ_ONLY"] = isReadOnly;

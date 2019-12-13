@@ -16,7 +16,7 @@ namespace VirtualGrid.WinFormsDemo
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Examples.TinyCounterForm());
+            Application.Run(new Examples.TodoListForm());
         }
     }
 }

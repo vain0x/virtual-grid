@@ -18,14 +18,13 @@ namespace VirtualGrid.Layouts
             return _elements[elementKey];
         }
 
-        public object Locate(GridVector index)
+        public IEnumerable<object> Locate(GridVector index)
         {
             foreach (var element in _elements.Values)
             {
                 if (element.LastArrange.ContainsStrictly(index))
-                    return element.ElementKey;
+                    yield return element.ElementKey;
             }
-            return null;
         }
 
         internal GridVector Measure(IGridLayout layout, GridMeasure available)

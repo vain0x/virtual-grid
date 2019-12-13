@@ -21,9 +21,9 @@ namespace VirtualGrid.WinFormsDemo
         private readonly GridLayoutModel _layoutModel =
             new GridLayoutModel();
 
-        private readonly Action<object, object> _dispatch;
+        private readonly Action<object, Action> _dispatch;
 
-        public DataGridViewGridProvider(DataGridView inner, Action<object, object> dispatch)
+        public DataGridViewGridProvider(DataGridView inner, Action<object, Action> dispatch)
         {
             _inner = inner;
 
@@ -44,19 +44,40 @@ namespace VirtualGrid.WinFormsDemo
                 var column = ColumnIndex.From(ev.ColumnIndex);
                 var index = GridVector.Create(row, column);
 
-                var elementKey = _layoutModel.Locate(index);
-                if (elementKey == null)
-                    return;
+                foreach (var elementKey in _layoutModel.Locate(index))
+                {
+                    var vCell = _lastGrid.FindCell(elementKey);
+                    if (vCell == null)
+                        continue;
 
-                var vCell = _lastGrid.FindCell(elementKey);
-                if (vCell == null)
-                    return;
+                    var action = vCell.Attributes["A_ON_CLICK"] as Action;
+                    if (action == null)
+                        continue;
 
-                var action = vCell.Attributes["A_ON_CLICK"];
-                if (action == null)
-                    return;
+                    _dispatch(vCell.ElementKey, action);
+                }
+            };
 
-                _dispatch(vCell.ElementKey, action);
+            _inner.CellValueChanged += (sender, ev) =>
+            {
+                var row = RowIndex.From(ev.RowIndex);
+                var column = ColumnIndex.From(ev.ColumnIndex);
+                var index = GridVector.Create(row, column);
+
+                foreach (var elementKey in _layoutModel.Locate(index))
+                {
+                    var vCell = _lastGrid.FindCell(elementKey);
+                    if (vCell == null)
+                        continue;
+
+                    var action = vCell.Attributes["A_ON_CHANGED"] as Action<object>;
+                    if (action == null)
+                        continue;
+
+                    var value = _inner.Rows[row.Row].Cells[column.Column].Value;
+
+                    _dispatch(vCell.ElementKey, () => action(value));
+                }
             };
         }
 
