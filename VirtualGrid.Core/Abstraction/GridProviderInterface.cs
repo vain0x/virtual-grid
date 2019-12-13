@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VirtualGrid.Core
+namespace VirtualGrid.Abstraction
 {
-    public class Class1
+    public interface IGridProvider
     {
     }
 }
