@@ -10,14 +10,24 @@ namespace VirtualGrid.WinFormsDemo.Examples
 {
     public sealed class TinyCounterView
     {
-        readonly TinyCounterModel _state;
+        readonly TinyCounterModel _model;
 
         readonly VGridBuilder _h;
 
-        public TinyCounterView(TinyCounterModel state, VGridBuilder h)
+        public TinyCounterView(TinyCounterModel model, VGridBuilder h)
         {
-            _state = state;
+            _model = model;
             _h = h;
+        }
+
+        void Increment()
+        {
+            _model.Increment();
+        }
+
+        void Decrement()
+        {
+            _model.Decrement();
         }
 
         public IGridLayoutProvider Render()
@@ -32,9 +42,10 @@ namespace VirtualGrid.WinFormsDemo.Examples
             }
 
             {
-                var increment = _h.NewButton("[+]").OnClick("INCREMENT");
-                var decrement = _h.NewButton("[-]").OnClick("DECREMENT");
-                var count = _h.NewText(_state.Count.ToString());
+                var increment = _h.NewButton("[+]").OnClick(Increment);
+                var decrement = _h.NewButton("[-]").OnClick(Decrement);
+
+                var count = _h.NewText(_model.Count.ToString());
 
                 var row = _h.NewRow();
                 row.Add(increment);

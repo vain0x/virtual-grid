@@ -20,7 +20,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
             Count--;
         }
 
-        public void Update(string action)
+        public void Update(object action)
         {
             if (action == "INCREMENT")
             {

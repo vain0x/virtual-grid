@@ -33,9 +33,13 @@ namespace VirtualGrid.WinFormsDemo.Examples
             _gridProvider = new DataGridViewGridProvider(_dataGridView, Dispatch);
         }
 
-        private void Dispatch(object elementKey, object action)
+        private void Dispatch(object elementKey, object actionObj)
         {
-            _model.Update(action as string);
+            var action = actionObj as Action;
+            if (action == null)
+                return;
+
+            action();
             Render(_model);
         }
 

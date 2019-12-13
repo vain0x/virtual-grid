@@ -50,9 +50,9 @@ namespace VirtualGrid.Models
             }
         }
 
-        public VCell OnClick(string msg)
+        public VCell OnClick(Action action)
         {
-            Attributes["A_ON_CLICK"] = msg;
+            Attributes["A_ON_CLICK"] = action;
             return this;
         }
 
