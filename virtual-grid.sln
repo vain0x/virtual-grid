@@ -3,7 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29503.13
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualGrid.Core", "VirtualGrid.Core\VirtualGrid.Core.csproj", "{04A2E2F4-CD45-4D54-A388-34C1829BBE4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualGrid.WinFormsDemo", "VirtualGrid.WinFormsDemo\VirtualGrid.WinFormsDemo.csproj", "{403A4AD7-AA91-4C67-B0A4-BDB70E85431D}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{04A2E2F4-CD45-4D54-A388-34C1829BBE4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04A2E2F4-CD45-4D54-A388-34C1829BBE4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04A2E2F4-CD45-4D54-A388-34C1829BBE4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04A2E2F4-CD45-4D54-A388-34C1829BBE4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{403A4AD7-AA91-4C67-B0A4-BDB70E85431D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{403A4AD7-AA91-4C67-B0A4-BDB70E85431D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{403A4AD7-AA91-4C67-B0A4-BDB70E85431D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{403A4AD7-AA91-4C67-B0A4-BDB70E85431D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
