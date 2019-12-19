@@ -16,12 +16,12 @@ namespace VirtualGrid
         : IReadOnlyDictionary<TKey, TValue>
         , IDictionary<TKey, TValue>
     {
-        readonly Dictionary<TKey, TValue> _inner = new Dictionary<TKey, TValue>();
+        private readonly Dictionary<TKey, TValue> _inner = new Dictionary<TKey, TValue>();
 
         /// <summary>
         /// 既定値を作成する関数
         /// </summary>
-        readonly Func<TKey, TValue> _defaultFactory;
+        private readonly Func<TKey, TValue> _defaultFactory;
 
         public DefaultDictionary(Func<TKey, TValue> defaultFactory)
         {

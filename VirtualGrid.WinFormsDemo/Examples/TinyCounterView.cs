@@ -10,9 +10,9 @@ namespace VirtualGrid.WinFormsDemo.Examples
 {
     public sealed class TinyCounterView
     {
-        readonly TinyCounterModel _model;
+        private readonly TinyCounterModel _model;
 
-        readonly GridBuilder<DataGridViewGridProvider> _h;
+        private readonly GridBuilder<DataGridViewGridProvider> _h;
 
         public TinyCounterView(TinyCounterModel model, GridBuilder<DataGridViewGridProvider> h)
         {

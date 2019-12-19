@@ -14,7 +14,7 @@ namespace VirtualGrid
     public sealed class ArrayTuple<T>
         : IEquatable<ArrayTuple<T>>
     {
-        readonly T[] _inner;
+        private readonly T[] _inner;
 
         public ArrayTuple(T[] inner)
         {
