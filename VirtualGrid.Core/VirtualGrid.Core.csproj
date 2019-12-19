@@ -67,6 +67,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rendering\GridAttributeBinding.cs" />
     <Compile Include="Rendering\GridAttributeData.cs" />
+    <Compile Include="Rendering\GridAttributeDataDiffer.cs" />
     <Compile Include="Rendering\GridAttributeDelta.cs" />
     <Compile Include="Rendering\GridAttributeDeltaKind.cs" />
     <Compile Include="Rendering\GridAttributeDiffer.cs" />
@@ -77,7 +78,7 @@
     <Compile Include="Rendering\GridRenderContext.cs" />
     <Compile Include="Rendering\GridCellAdderInterface.cs" />
     <Compile Include="Rendering\GridCellBuilderInterface.cs" />
-    <Compile Include="Rendering\GridAttributeProviderInterface.cs" />
+    <Compile Include="Rendering\GridAttributeDeltaListenerInterface.cs" />
     <Compile Include="RowIndex.cs" />
     <Compile Include="RowMeasure.cs" />
   </ItemGroup>

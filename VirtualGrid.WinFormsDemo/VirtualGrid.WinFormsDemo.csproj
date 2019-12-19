@@ -64,7 +64,6 @@
     </Compile>
     <Compile Include="Examples\TodoListModel.cs" />
     <Compile Include="Examples\TodoListView.cs" />
-    <Compile Include="GridAttributeDataDiffer.cs" />
     <Compile Include="GridAttributeProviderBase.cs" />
     <Compile Include="GridCellAdderExtensions.cs" />
     <Compile Include="GridCellBuilderExtensions.cs" />

@@ -1,25 +1,22 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using VirtualGrid.Rendering;
 
-namespace VirtualGrid.WinFormsDemo
+namespace VirtualGrid.Rendering
 {
-    public sealed class GridAttributeDataDiffer<T>
+    public struct GridAttributeDataDiffer<T>
     {
-        private IGridAttributeProvider<T> _attribute;
+        private readonly GridAttributeData<T> _data;
 
-        private GridAttributeData<T> _data;
+        private readonly IGridAttributeDeltaListener<T> _listener;
 
-        private DataGridViewGridProvider _provider;
-
-        public GridAttributeDataDiffer(IGridAttributeProvider<T> attribute, GridAttributeData<T> data, DataGridViewGridProvider provider)
+        public GridAttributeDataDiffer(GridAttributeData<T> data, IGridAttributeDeltaListener<T> listener)
         {
-            _attribute = attribute;
             _data = data;
-            _provider = provider;
+            _listener = listener;
         }
 
-        void ApplyDiffOnKey(object elementKey)
+        private void ApplyDiffOnKey(object elementKey)
         {
             GridAttributeDeltaKind kind;
             T oldValue;
@@ -28,25 +25,18 @@ namespace VirtualGrid.WinFormsDemo
             if (!_data.TryGetDelta(elementKey, out kind, out oldValue, out newValue))
                 return;
 
-            GridLocation location;
-            if (!_provider._locationMap.TryGetValue(elementKey, out location))
-            {
-                Debug.WriteLine("Cell location unknown ({0})", elementKey);
-                return;
-            }
-
             switch (kind)
             {
                 case GridAttributeDeltaKind.Add:
-                    _attribute.OnAdd(elementKey, location, newValue);
+                    _listener.OnAdd(elementKey, newValue);
                     return;
 
                 case GridAttributeDeltaKind.Change:
-                    _attribute.OnChange(elementKey, location, oldValue, newValue);
+                    _listener.OnChange(elementKey, oldValue, newValue);
                     return;
 
                 case GridAttributeDeltaKind.Remove:
-                    _attribute.OnRemove(elementKey, location, oldValue);
+                    _listener.OnRemove(elementKey, oldValue);
                     return;
 
                 default:
@@ -66,7 +56,7 @@ namespace VirtualGrid.WinFormsDemo
                 ApplyDiffOnKey(elementKey);
             }
 
-            _attribute.MarkAsClean();
+            _data.MarkAsClean();
         }
     }
 }
