@@ -17,6 +17,8 @@ namespace VirtualGrid.WinFormsDemo
 
         public readonly IsCheckedAttributeProvider IsCheckedAttribute;
 
+        public readonly OnClickAttributeProvider OnClickAttribute;
+
         public readonly ReadOnlyAttributeProvider ReadOnlyAttribute;
 
         public readonly TextAttributeProvider TextAttribute;
@@ -54,6 +56,8 @@ namespace VirtualGrid.WinFormsDemo
             _inner = inner;
 
             IsCheckedAttribute = new IsCheckedAttributeProvider(this);
+
+            OnClickAttribute = new OnClickAttributeProvider(this);
 
             ReadOnlyAttribute = new ReadOnlyAttributeProvider(this);
 
@@ -360,7 +364,7 @@ namespace VirtualGrid.WinFormsDemo
                             }
                         }
 
-                        var action = _renderContext.GetElementAttribute<Action>(elementKey, "A_ON_CLICK", null);
+                        var action = OnClickAttribute.GetValue(elementKey);
                         if (action == null)
                             continue;
 
@@ -462,6 +466,7 @@ namespace VirtualGrid.WinFormsDemo
             ApplyAttributeDiff(attributeDiff);
 
             IsCheckedAttribute.ApplyDiff();
+            OnClickAttribute.ApplyDiff();
             ReadOnlyAttribute.ApplyDiff();
             TextAttribute.ApplyDiff();
         }

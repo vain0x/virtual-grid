@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Provider\Attributes\IsCheckedAttributeProvider.cs" />
+    <Compile Include="Provider\Attributes\OnClickAttributeProvider.cs" />
     <Compile Include="Provider\Attributes\ReadOnlyAttributeProvider.cs" />
     <Compile Include="Provider\DataGridViewExtensions.cs" />
     <Compile Include="Provider\DataGridViewGridProvider.cs" />

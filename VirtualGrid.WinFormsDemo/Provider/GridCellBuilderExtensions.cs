@@ -1,3 +1,4 @@
+using System;
 using VirtualGrid.Rendering;
 using P = VirtualGrid.WinFormsDemo.DataGridViewGridProvider;
 
@@ -8,6 +9,12 @@ namespace VirtualGrid.WinFormsDemo
         public static IGridCellBuilder<P> SetIsChecked(this IGridCellBuilder<P> self, bool value)
         {
             self.Provider.IsCheckedAttribute.SetValue(self.ElementKey, value);
+            return self;
+        }
+
+        public static IGridCellBuilder<P> OnClick(this IGridCellBuilder<P> self, Action action)
+        {
+            self.Provider.OnClickAttribute.SetValue(self.ElementKey, action);
             return self;
         }
 
