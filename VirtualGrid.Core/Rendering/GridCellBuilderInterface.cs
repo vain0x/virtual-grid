@@ -36,12 +36,6 @@ namespace VirtualGrid.Rendering
             return this;
         }
 
-        public IGridCellBuilder<TProvider> SetIsChecked(bool isChecked)
-        {
-            SetAttribute("A_IS_CHECKED", isChecked);
-            return this;
-        }
-
         public IGridCellBuilder<TProvider> OnClick(Action action)
         {
             SetAttribute("A_ON_CLICK", action);

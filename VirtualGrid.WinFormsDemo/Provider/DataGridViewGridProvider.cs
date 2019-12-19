@@ -15,6 +15,8 @@ namespace VirtualGrid.WinFormsDemo
     {
         internal readonly DataGridView _inner;
 
+        public readonly IsCheckedAttributeProvider IsCheckedAttribute;
+
         public readonly ReadOnlyAttributeProvider ReadOnlyAttribute;
 
         public readonly TextAttributeProvider TextAttribute;
@@ -50,6 +52,8 @@ namespace VirtualGrid.WinFormsDemo
         public DataGridViewGridProvider(DataGridView inner, Action<object, Action> dispatch)
         {
             _inner = inner;
+
+            IsCheckedAttribute = new IsCheckedAttributeProvider(this);
 
             ReadOnlyAttribute = new ReadOnlyAttributeProvider(this);
 
@@ -283,13 +287,6 @@ namespace VirtualGrid.WinFormsDemo
                     }
                     return;
 
-                case "A_IS_CHECKED":
-                    {
-                        var isChecked = value as bool? == true;
-                        cell.Value = isChecked ? "[x]" : "[ ]";
-                    }
-                    return;
-
                 default:
                     // Debug.WriteLine("Unknown attribute " + attribute);
                     return;
@@ -353,13 +350,13 @@ namespace VirtualGrid.WinFormsDemo
 
                         // チェックボックスのチェックを実装する。
                         // FIXME: セルタイプを見る。
-                        var isChecked = _renderContext.GetElementAttribute(elementKey, "A_IS_CHECKED", new bool?());
-                        if (isChecked != null)
+                        if (IsCheckedAttribute.IsAttached(elementKey))
                         {
+                            var isChecked = IsCheckedAttribute.GetValue(elementKey);
                             var changedAction = _renderContext.GetElementAttribute<Action<object>>(elementKey, "A_ON_CHANGED", null);
                             if (changedAction != null)
                             {
-                                _dispatch(elementKey, () => changedAction(!isChecked.Value));
+                                _dispatch(elementKey, () => changedAction(!isChecked));
                             }
                         }
 
@@ -464,6 +461,7 @@ namespace VirtualGrid.WinFormsDemo
             ApplyGridLayoutDiff(GridPart.RowHeader, rowHeaderLayoutDiff);
             ApplyAttributeDiff(attributeDiff);
 
+            IsCheckedAttribute.ApplyDiff();
             ReadOnlyAttribute.ApplyDiff();
             TextAttribute.ApplyDiff();
         }

@@ -62,6 +62,11 @@ namespace VirtualGrid.Rendering
             }
         }
 
+        public bool IsAttached(object elementKey)
+        {
+            return _old.ContainsKey(elementKey) || _newKeys.Contains(elementKey);
+        }
+
         public T GetOldValue(object elementKey)
         {
             T value;

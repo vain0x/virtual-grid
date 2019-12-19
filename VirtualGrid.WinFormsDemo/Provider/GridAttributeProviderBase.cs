@@ -19,6 +19,16 @@ namespace VirtualGrid.WinFormsDemo
             _provider = provider;
         }
 
+        public bool IsAttached(object elementKey)
+        {
+            return _data.IsAttached(elementKey);
+        }
+
+        public T GetValue(object elementKey)
+        {
+            return _data.GetOldValue(elementKey);
+        }
+
         public void SetValue(object elementKey, T value)
         {
             _data.SetValue(elementKey, value);
