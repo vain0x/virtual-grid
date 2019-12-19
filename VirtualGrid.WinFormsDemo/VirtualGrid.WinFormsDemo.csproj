@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Provider\Attributes\ReadOnlyAttributeProvider.cs" />
     <Compile Include="Provider\DataGridViewExtensions.cs" />
     <Compile Include="Provider\DataGridViewGridProvider.cs" />
     <Compile Include="Examples\TinyCounterForm.cs">

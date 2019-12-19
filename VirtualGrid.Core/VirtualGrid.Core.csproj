@@ -73,7 +73,6 @@
     <Compile Include="Rendering\GridAttributeDiffer.cs" />
     <Compile Include="Rendering\GridBodyBuilder.cs" />
     <Compile Include="Rendering\GridBuilder.cs" />
-    <Compile Include="Rendering\GridCellAdderExtensions.cs" />
     <Compile Include="Rendering\GridHeaderBuilder.cs" />
     <Compile Include="Rendering\GridRenderContext.cs" />
     <Compile Include="Rendering\GridCellAdderInterface.cs" />

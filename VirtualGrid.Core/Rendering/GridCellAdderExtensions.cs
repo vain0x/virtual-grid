@@ -1,3 +1,0 @@
-namespace VirtualGrid.Rendering
-{
-}

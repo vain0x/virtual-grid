@@ -30,12 +30,6 @@ namespace VirtualGrid.Rendering
             Context.SetElementAttribute(ElementKey, attribute, value);
         }
 
-        public IGridCellBuilder<TProvider> SetReadOnly(bool isReadOnly)
-        {
-            SetAttribute("A_READ_ONLY", isReadOnly);
-            return this;
-        }
-
         public IGridCellBuilder<TProvider> SetValue(object value)
         {
             SetAttribute("A_VALUE", value);

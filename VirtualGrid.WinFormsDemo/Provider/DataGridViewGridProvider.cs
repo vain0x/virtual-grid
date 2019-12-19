@@ -15,6 +15,8 @@ namespace VirtualGrid.WinFormsDemo
     {
         internal readonly DataGridView _inner;
 
+        public readonly ReadOnlyAttributeProvider ReadOnlyAttribute;
+
         public readonly TextAttributeProvider TextAttribute;
 
         private IGridLayoutNode _columnHeaderLayout =
@@ -48,6 +50,8 @@ namespace VirtualGrid.WinFormsDemo
         public DataGridViewGridProvider(DataGridView inner, Action<object, Action> dispatch)
         {
             _inner = inner;
+
+            ReadOnlyAttribute = new ReadOnlyAttributeProvider(this);
 
             TextAttribute = new TextAttributeProvider(this);
 
@@ -279,13 +283,6 @@ namespace VirtualGrid.WinFormsDemo
                     }
                     return;
 
-                case "A_READ_ONLY":
-                    if (location.Part == GridPart.Body)
-                    {
-                        cell.ReadOnly = value as bool? == true;
-                    }
-                    return;
-
                 case "A_IS_CHECKED":
                     {
                         var isChecked = value as bool? == true;
@@ -467,6 +464,7 @@ namespace VirtualGrid.WinFormsDemo
             ApplyGridLayoutDiff(GridPart.RowHeader, rowHeaderLayoutDiff);
             ApplyAttributeDiff(attributeDiff);
 
+            ReadOnlyAttribute.ApplyDiff();
             TextAttribute.ApplyDiff();
         }
     }

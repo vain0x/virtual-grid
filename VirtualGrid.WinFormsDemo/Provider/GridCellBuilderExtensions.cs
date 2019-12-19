@@ -10,5 +10,11 @@ namespace VirtualGrid.WinFormsDemo
             self.Provider.TextAttribute.SetValue(self.ElementKey, text);
             return self;
         }
+
+        public static IGridCellBuilder<P> SetReadOnly(this IGridCellBuilder<P> self, bool value)
+        {
+            self.Provider.ReadOnlyAttribute.SetValue(self.ElementKey, value);
+            return self;
+        }
     }
 }
