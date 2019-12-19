@@ -19,6 +19,8 @@ namespace VirtualGrid.WinFormsDemo
 
         public readonly OnClickAttributeProvider OnClickAttribute;
 
+        public readonly OnTextChangedAttributeProvider OnTextChangedAttribute;
+
         public readonly ReadOnlyAttributeProvider ReadOnlyAttribute;
 
         public readonly TextAttributeProvider TextAttribute;
@@ -58,6 +60,8 @@ namespace VirtualGrid.WinFormsDemo
             IsCheckedAttribute = new IsCheckedAttributeProvider(this);
 
             OnClickAttribute = new OnClickAttributeProvider(this);
+
+            OnTextChangedAttribute = new OnTextChangedAttributeProvider(this);
 
             ReadOnlyAttribute = new ReadOnlyAttributeProvider(this);
 
@@ -390,11 +394,25 @@ namespace VirtualGrid.WinFormsDemo
                     {
                         var elementKey = pair.Key;
 
-                        var action = _renderContext.GetElementAttribute<Action<object>>(elementKey, "A_ON_CHANGED", null);
-                        if (action == null)
-                            continue;
+                        {
+                            var text = value as string;
+                            if (text != null || value == null)
+                            {
+                                var action = OnTextChangedAttribute.GetValue(elementKey);
+                                if (action != null)
+                                {
+                                    _dispatch(elementKey, () => action(text ?? ""));
+                                }
+                            }
+                        }
 
-                        _dispatch(elementKey, () => action(value));
+                        {
+                            var action = _renderContext.GetElementAttribute<Action<object>>(elementKey, "A_ON_CHANGED", null);
+                            if (action != null)
+                            {
+                                _dispatch(elementKey, () => action(value));
+                            }
+                        }
                     }
                 }
             };
@@ -467,6 +485,7 @@ namespace VirtualGrid.WinFormsDemo
 
             IsCheckedAttribute.ApplyDiff();
             OnClickAttribute.ApplyDiff();
+            OnTextChangedAttribute.ApplyDiff();
             ReadOnlyAttribute.ApplyDiff();
             TextAttribute.ApplyDiff();
         }

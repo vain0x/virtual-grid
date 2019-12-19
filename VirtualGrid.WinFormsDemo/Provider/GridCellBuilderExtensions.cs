@@ -18,6 +18,12 @@ namespace VirtualGrid.WinFormsDemo
             return self;
         }
 
+        public static IGridCellBuilder<P> OnTextChanged(this IGridCellBuilder<P> self, Action<string> action)
+        {
+            self.Provider.OnTextChangedAttribute.SetValue(self.ElementKey, action);
+            return self;
+        }
+
         public static IGridCellBuilder<P> SetReadOnly(this IGridCellBuilder<P> self, bool value)
         {
             self.Provider.ReadOnlyAttribute.SetValue(self.ElementKey, value);

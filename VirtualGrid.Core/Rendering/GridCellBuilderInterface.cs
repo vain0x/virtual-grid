@@ -36,19 +36,6 @@ namespace VirtualGrid.Rendering
             return this;
         }
 
-        public IGridCellBuilder<TProvider> OnTextChanged(Action<string> action)
-        {
-            SetAttribute("A_ON_CHANGED", new Action<object>(value =>
-            {
-                var text = value as string;
-                if (text != null || value == null)
-                {
-                    action(text);
-                }
-            }));
-            return this;
-        }
-
         public IGridCellBuilder<TProvider> OnCheckChanged(Action<bool> action)
         {
             SetAttribute("A_ON_CHANGED", new Action<object>(value =>
