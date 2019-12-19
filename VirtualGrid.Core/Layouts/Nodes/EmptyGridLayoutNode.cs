@@ -7,14 +7,17 @@ using System.Threading.Tasks;
 
 namespace VirtualGrid.Layouts
 {
+    /// <summary>
+    /// セルを配置しないレイアウト。
+    /// </summary>
     [DebuggerDisplay("{AsDebug}")]
-    internal sealed class EmptyGridLayout
-        : IGridLayout
-        , IEquatable<EmptyGridLayout>
+    internal sealed class EmptyGridLayoutNode
+        : IGridLayoutNode
+        , IEquatable<EmptyGridLayoutNode>
     {
         public object ElementKey { get; private set; }
 
-        public EmptyGridLayout(object elementKey)
+        public EmptyGridLayoutNode(object elementKey)
         {
             ElementKey = elementKey;
         }
@@ -27,26 +30,26 @@ namespace VirtualGrid.Layouts
             }
         }
 
-        public GridVector Measure(GridMeasure available, GridLayoutModel model)
+        public GridVector Measure(GridMeasure available, GridLayoutContext context)
         {
             return GridVector.Zero;
         }
 
-        public void Arrange(GridRange range, GridLayoutModel model)
+        public void Arrange(GridRange range, GridLayoutContext context)
         {
         }
 
-        public IGridLayout ToGridLayout()
+        public IGridLayoutNode ToGridLayout()
         {
             return this;
         }
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as EmptyGridLayout);
+            return Equals(obj as EmptyGridLayoutNode);
         }
 
-        public bool Equals(EmptyGridLayout other)
+        public bool Equals(EmptyGridLayoutNode other)
         {
             return other != null &&
                    EqualityComparer<object>.Default.Equals(ElementKey, other.ElementKey);
@@ -57,12 +60,16 @@ namespace VirtualGrid.Layouts
             return -1122045474 + EqualityComparer<object>.Default.GetHashCode(ElementKey);
         }
 
-        public static bool operator ==(EmptyGridLayout left, EmptyGridLayout right)
+        public void Iterate(Action<IGridLayoutNode> action)
         {
-            return EqualityComparer<EmptyGridLayout>.Default.Equals(left, right);
         }
 
-        public static bool operator !=(EmptyGridLayout left, EmptyGridLayout right)
+        public static bool operator ==(EmptyGridLayoutNode left, EmptyGridLayoutNode right)
+        {
+            return EqualityComparer<EmptyGridLayoutNode>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(EmptyGridLayoutNode left, EmptyGridLayoutNode right)
         {
             return !(left == right);
         }

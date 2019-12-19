@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 namespace VirtualGrid.Layouts
 {
     /// <summary>
-    /// 1つのセルからなるレイアウト。
+    /// 領域を1つのセルで埋めるレイアウト。
     /// </summary>
     [DebuggerDisplay("{AsDebug}")]
-    internal sealed class CellGridLayout
-        : IGridLayout
+    internal sealed class CellGridLayoutNode
+        : IGridLayoutNode
     {
         public object ElementKey { get; }
 
-        public CellGridLayout(object elementKey)
+        public CellGridLayoutNode(object elementKey)
         {
             ElementKey = elementKey;
         }
@@ -34,18 +34,22 @@ namespace VirtualGrid.Layouts
             }
         }
 
-        public GridVector Measure(GridMeasure available, GridLayoutModel model)
+        public GridVector Measure(GridMeasure available, GridLayoutContext context)
         {
-            var row = RowIndex.From(1);
-            var column = ColumnIndex.From(1);
+            var row = available.Row.RowOpt ?? RowIndex.From(1);
+            var column = available.Column.ColumnOpt ?? ColumnIndex.From(1);
             return GridVector.Create(row, column);
         }
 
-        public void Arrange(GridRange range, GridLayoutModel model)
+        public void Arrange(GridRange range, GridLayoutContext context)
         {
         }
 
-        public IGridLayout ToGridLayout()
+        public void Iterate(Action<IGridLayoutNode> action)
+        {
+        }
+
+        public IGridLayoutNode ToGridLayout()
         {
             return this;
         }

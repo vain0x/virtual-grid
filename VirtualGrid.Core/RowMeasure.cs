@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace VirtualGrid
 {
+    /// <summary>
+    /// 行数 (有限または無限)
+    /// </summary>
     [DebuggerDisplay("{AsDebug}")]
     public struct RowMeasure
         : IEquatable<RowMeasure>

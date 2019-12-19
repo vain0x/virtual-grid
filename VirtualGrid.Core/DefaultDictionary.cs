@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace VirtualGrid
 {
+    /// <summary>
+    /// 既定値を持つ辞書 (連想配列)
+    /// </summary>
     [DebuggerDisplay("[Count = {Count}]")]
     internal sealed class DefaultDictionary<TKey, TValue>
         : IReadOnlyDictionary<TKey, TValue>
@@ -15,6 +18,9 @@ namespace VirtualGrid
     {
         readonly Dictionary<TKey, TValue> _inner = new Dictionary<TKey, TValue>();
 
+        /// <summary>
+        /// 既定値を作成する関数
+        /// </summary>
         readonly Func<TKey, TValue> _defaultFactory;
 
         public DefaultDictionary(Func<TKey, TValue> defaultFactory)
@@ -70,6 +76,9 @@ namespace VirtualGrid
             }
         }
 
+        /// <summary>
+        /// キーに対応する要素を取得または設定する。
+        /// </summary>
         public TValue this[TKey key]
         {
             get
@@ -78,7 +87,6 @@ namespace VirtualGrid
                 if (!_inner.TryGetValue(key, out value))
                 {
                     value = _defaultFactory(key);
-                    _inner.Add(key, value);
                 }
                 return value;
             }
@@ -98,6 +106,17 @@ namespace VirtualGrid
         public bool ContainsKey(TKey key)
         {
             return _inner.ContainsKey(key);
+        }
+
+        public TValue Touch(TKey key)
+        {
+            TValue value;
+            if (!_inner.TryGetValue(key, out value))
+            {
+                value = _defaultFactory(key);
+                _inner.Add(key, value);
+            }
+            return value;
         }
 
         public void Add(TKey key, TValue value)

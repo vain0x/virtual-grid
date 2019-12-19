@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using VirtualGrid.Layouts;
-using VirtualGrid.Models;
+using VirtualGrid.Rendering;
 
 namespace VirtualGrid.WinFormsDemo.Examples
 {
@@ -33,29 +33,24 @@ namespace VirtualGrid.WinFormsDemo.Examples
             _gridProvider = new DataGridViewGridProvider(_dataGridView, Dispatch);
         }
 
-        private void Dispatch(object elementKey, object actionObj)
+        private void Dispatch(object elementKey, Action action)
         {
-            var action = actionObj as Action;
-            if (action == null)
-                return;
-
             action();
-            Render(_model);
+            BeginInvoke(new Action(Render));
         }
 
-        private void Render(TinyCounterModel state)
+        private void Render()
         {
-            var h = new VGridBuilder();
-            var body = new TinyCounterView(state, h).Render();
-            var grid = h.Finish().WithBody(body);
-            _gridProvider.Render(grid);
+            var h = _gridProvider.GetBuilder();
+            new TinyCounterView(_model, h).Render();
+            _gridProvider.Render(h);
         }
 
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
 
-            Render(_model);
+            Render();
         }
     }
 }

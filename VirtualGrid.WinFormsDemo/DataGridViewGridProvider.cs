@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using VirtualGrid.Abstraction;
 using VirtualGrid.Layouts;
-using VirtualGrid.Models;
+using VirtualGrid.Rendering;
 
 namespace VirtualGrid.WinFormsDemo
 {
@@ -16,10 +16,32 @@ namespace VirtualGrid.WinFormsDemo
     {
         private readonly DataGridView _inner;
 
-        private VGrid _lastGrid = VGrid.Empty;
+        private IGridLayoutNode _columnHeaderLayout =
+            GridLayoutNode.Empty("?_EMPTY_COLUMN_HEADER");
 
-        private readonly GridLayoutModel _layoutModel =
-            new GridLayoutModel();
+        private GridPivots _columnHeaderPivots =
+            GridPivots.Empty;
+
+        private IGridLayoutNode _rowHeaderLayout =
+            GridLayoutNode.Empty("?_EMPTY_ROW_HEADER");
+
+        private GridPivots _rowHeaderPivots =
+            GridPivots.Empty;
+
+        private IGridLayoutNode _bodyLayout =
+            GridLayoutNode.Empty("?_EMPTY_BODY");
+
+        private GridAttributeBinding[] _oldBindings =
+            Array.Empty<GridAttributeBinding>();
+
+        private IDictionary<object, GridLocation> _locationMap =
+            new Dictionary<object, GridLocation>();
+
+        private readonly GridLayoutContext _layoutContext =
+            new GridLayoutContext();
+
+        private readonly GridRenderContext _renderContext =
+            new GridRenderContext();
 
         private readonly Action<object, Action> _dispatch;
 
@@ -33,117 +55,456 @@ namespace VirtualGrid.WinFormsDemo
                 dispatch(elementKey, action);
             };
 
-            Initialize();
+            SubscribeEvents();
         }
 
-        void Initialize()
+        private void UpdateLocationMap()
+        {
+            _locationMap.Clear();
+
+            foreach (var t in _renderContext._cells)
+            {
+                var part = t.Item1;
+                var rowKey = t.Item2;
+                var columnKey = t.Item3;
+                var elementKey = t.Item4;
+
+                if (part == GridPart.Body)
+                {
+                    var row = _layoutContext.LastArrange(rowKey).Start.Row;
+                    var column = _layoutContext.LastArrange(columnKey).Start.Column;
+                    _locationMap.Add(elementKey, GridLocation.NewBody(GridVector.Create(row, column)));
+                }
+                else
+                {
+                    var index = _layoutContext.LastArrange(elementKey).Start;
+                    _locationMap.Add(elementKey, GridLocation.Create(part, index));
+                }
+            }
+        }
+
+        public GridBuilder GetBuilder()
+        {
+            _renderContext.Clear();
+            return new GridBuilder(_renderContext);
+        }
+
+        private void AddColumnHeaderRow(int rowIndex)
+        {
+            Debug.Assert(rowIndex == 0);
+        }
+
+        private void AddColumnHeaderColumn(int columnIndex)
+        {
+            _inner.Columns.Insert(columnIndex, new DataGridViewColumn()
+            {
+                HeaderText = "",
+                CellTemplate = new DataGridViewTextBoxCell(),
+                Width = 100,
+            });
+        }
+
+        private void RemoveColumnHeaderRow(int _rowIndex)
+        {
+            Debug.Assert(false, "カラムヘッダーの行は削除できません。");
+        }
+
+        private void RemoveColumnHeaderColumn(int columnIndex)
+        {
+            _inner.Columns.RemoveAt(columnIndex);
+        }
+
+        private void AddRowHeaderRow(int rowIndex)
+        {
+            _inner.Rows.Insert(rowIndex, 1);
+        }
+
+        private void AddRowHeaderColumn(int columnIndex)
+        {
+            // Debug.Assert(columnIndex == 0);
+        }
+
+        private void RemoveRowHeaderRow(int rowIndex)
+        {
+            _inner.Rows.RemoveAt(rowIndex);
+        }
+
+        private void RemoveRowHeaderColumn(int _columnIndex)
+        {
+            // FIXME: ローヘッダーの1列目の主成分が1行目のキーになっているので、
+            //        1行目に挿入・削除が起こるたびにカラムが追加・削除されてしまう。
+            // Debug.Assert(false, "ローヘッダーの列は削除できません。");
+        }
+
+        private void AddRow(GridPart part, RowIndex rowIndex)
+        {
+            switch (part)
+            {
+                case GridPart.ColumnHeader:
+                    AddColumnHeaderRow(rowIndex.Row);
+                    return;
+
+                case GridPart.RowHeader:
+                    AddRowHeaderRow(rowIndex.Row);
+                    return;
+
+                case GridPart.Body:
+                    throw new InvalidOperationException("Body には列を追加できません。ローヘッダーに行を追加してください。");
+
+                default:
+                    throw new Exception("Unknown GridPart");
+            }
+        }
+
+        private void AddColumn(GridPart part, ColumnIndex columnIndex)
+        {
+            switch (part)
+            {
+                case GridPart.ColumnHeader:
+                    AddColumnHeaderColumn(columnIndex.Column);
+                    return;
+
+                case GridPart.RowHeader:
+                    AddRowHeaderColumn(columnIndex.Column);
+                    return;
+
+                case GridPart.Body:
+                    throw new InvalidOperationException("Body には行を追加できません。カラムヘッダーに列を追加してください。");
+
+                default:
+                    throw new Exception("Unknown GridPart");
+            }
+        }
+
+        private void RemoveRow(GridPart part, RowIndex rowIndex)
+        {
+            switch (part)
+            {
+                case GridPart.ColumnHeader:
+                    RemoveColumnHeaderRow(rowIndex.Row);
+                    return;
+
+                case GridPart.RowHeader:
+                    RemoveRowHeaderRow(rowIndex.Row);
+                    return;
+
+                case GridPart.Body:
+                    throw new InvalidOperationException("Body の行を削除できません。ローヘッダーから行を削除してください。");
+
+                default:
+                    throw new Exception("Unknown GridPart");
+            }
+        }
+
+        private void RemoveColumn(GridPart part, ColumnIndex columnIndex)
+        {
+            switch (part)
+            {
+                case GridPart.ColumnHeader:
+                    RemoveColumnHeaderColumn(columnIndex.Column);
+                    return;
+
+                case GridPart.RowHeader:
+                    RemoveRowHeaderColumn(columnIndex.Column);
+                    return;
+
+                case GridPart.Body:
+                    throw new InvalidOperationException("Body の列を削除できません。カラムヘッダーの列を追加してください。");
+
+                default:
+                    throw new Exception("Unknown GridPart");
+            }
+        }
+
+        private void ApplyGridLyaoutDelta(GridPart part, GridLayoutDelta delta)
+        {
+            switch (delta.Kind)
+            {
+                case GridLayoutDeltaKind.InsertRow:
+                    AddRow(part, RowIndex.From(delta.Index));
+                    return;
+
+                case GridLayoutDeltaKind.InsertColumn:
+                    AddColumn(part, ColumnIndex.From(delta.Index));
+                    return;
+
+                case GridLayoutDeltaKind.RemoveRow:
+                    RemoveRow(part, RowIndex.From(delta.Index));
+                    return;
+
+                case GridLayoutDeltaKind.RemoveColumn:
+                    RemoveColumn(part, ColumnIndex.From(delta.Index));
+                    return;
+
+                default:
+                    throw new Exception("Unknown GridLayoutDeltaKind");
+            }
+        }
+
+        private void ApplyGridLayoutDiff(GridPart part, List<GridLayoutDelta> diff)
+        {
+            foreach (var delta in diff)
+            {
+                ApplyGridLyaoutDelta(part, delta);
+            }
+        }
+
+        private bool GetColumnHeaderCell(GridVector index, out DataGridViewCell cell)
+        {
+            if (index.Column >= _inner.ColumnCount)
+            {
+                Debug.WriteLine("Invalid column {0} >= {1}", index.Column, _inner.ColumnCount);
+                cell = null;
+                return false;
+            }
+
+            cell = _inner.Columns[index.Column.Column].HeaderCell;
+            return true;
+        }
+
+        private bool GetRowHeaderCell(GridVector index, out DataGridViewCell cell)
+        {
+            if (index.Row >= _inner.RowCount)
+            {
+                Debug.WriteLine("Invalid row {0} >= {1}", index.Row, _inner.RowCount);
+                cell = null;
+                return false;
+            }
+
+            cell = _inner.Rows[index.Row.Row].HeaderCell;
+            return true;
+        }
+
+        private bool GetBodyCell(GridVector index, out DataGridViewCell cell)
+        {
+            if (index.Row >= _inner.RowCount)
+            {
+                Debug.WriteLine("Invalid row {0} >= {1}", index.Row, _inner.RowCount);
+                cell = null;
+                return false;
+            }
+
+            if (index.Column >= _inner.ColumnCount)
+            {
+                Debug.WriteLine("Invalid column {0} >= {1}", index.Column, _inner.ColumnCount);
+                cell = null;
+                return false;
+            }
+
+            cell = _inner.Rows[index.Row.Row].Cells[index.Column.Column];
+            return true;
+        }
+
+        private bool GetCell(GridLocation location, out DataGridViewCell cell)
+        {
+            switch (location.Part)
+            {
+                case GridPart.ColumnHeader:
+                    return GetColumnHeaderCell(location.Index, out cell);
+
+                case GridPart.RowHeader:
+                    return GetRowHeaderCell(location.Index, out cell);
+
+                case GridPart.Body:
+                    return GetBodyCell(location.Index, out cell);
+
+                default:
+                    throw new Exception("Unknown GridPart");
+            }
+        }
+
+        private void AddAttribute(GridLocation location, string attribute, object value)
+        {
+            ChangeAttribute(location, attribute, value);
+        }
+
+        private void RemoveAttribute(GridLocation location, string attribute)
+        {
+            ChangeAttribute(location, attribute, null);
+        }
+
+        private void ChangeAttribute(GridLocation location, string attribute, object value)
+        {
+            DataGridViewCell cell;
+            if (!GetCell(location, out cell))
+                return;
+
+            switch (attribute)
+            {
+                case "A_VALUE":
+                    if (!EqualityComparer<object>.Default.Equals(cell.Value, value))
+                    {
+                        cell.Value = value;
+                    }
+                    return;
+
+                case "A_READ_ONLY":
+                    if (location.Part == GridPart.Body)
+                    {
+                        cell.ReadOnly = value as bool? == true;
+                    }
+                    return;
+
+                default:
+                    // Debug.WriteLine("Unknown attribute " + attribute);
+                    return;
+            }
+        }
+
+        private void ApplyAttributeDelta(GridAttributeDelta delta)
+        {
+            GridLocation location;
+            if (!_locationMap.TryGetValue(delta.ElementKey, out location))
+            {
+                Debug.WriteLine("Unknown cell {0} at {1}", delta.ElementKey, location);
+                return;
+            }
+
+            switch (delta.Kind)
+            {
+                case GridAttributeDeltaKind.Add:
+                    AddAttribute(location, delta.Attribute, delta.Value);
+                    return;
+
+                case GridAttributeDeltaKind.Remove:
+                    RemoveAttribute(location, delta.Attribute);
+                    return;
+
+                case GridAttributeDeltaKind.Change:
+                    ChangeAttribute(location, delta.Attribute, delta.Value);
+                    return;
+
+                default:
+                    throw new Exception("Unknown GridAttributeDeltaKind");
+            }
+        }
+
+        private void ApplyAttributeDiff(List<GridAttributeDelta> diff)
+        {
+            foreach (var delta in diff)
+            {
+                ApplyAttributeDelta(delta);
+            }
+        }
+
+        private void SubscribeEvents()
         {
             _inner.CellClick += (sender, ev) =>
             {
+                // ヘッダーのイベントは未実装
+                if (ev.RowIndex < 0 || ev.ColumnIndex < 0)
+                    return;
+
                 var row = RowIndex.From(ev.RowIndex);
                 var column = ColumnIndex.From(ev.ColumnIndex);
                 var index = GridVector.Create(row, column);
 
-                foreach (var elementKey in _layoutModel.Locate(index))
+                // FIXME: 効率化
+                foreach (var pair in _locationMap)
                 {
-                    var vCell = _lastGrid.FindCell(elementKey);
-                    if (vCell == null)
-                        continue;
+                    if (pair.Value.Part == GridPart.Body && pair.Value.Index == index)
+                    {
+                        var elementKey = pair.Key;
+                        var action = _renderContext.GetElementAttribute<Action>(elementKey, "A_ON_CLICK", null);
+                        if (action == null)
+                            continue;
 
-                    var action = vCell.Attributes["A_ON_CLICK"] as Action;
-                    if (action == null)
-                        continue;
-
-                    _dispatch(vCell.ElementKey, action);
+                        _dispatch(elementKey, action);
+                    }
                 }
             };
 
             _inner.CellValueChanged += (sender, ev) =>
             {
+                if (ev.RowIndex < 0 || ev.ColumnIndex < 0)
+                    return;
+
+                var value = _inner.Rows[ev.RowIndex].Cells[ev.ColumnIndex].Value;
+
                 var row = RowIndex.From(ev.RowIndex);
                 var column = ColumnIndex.From(ev.ColumnIndex);
                 var index = GridVector.Create(row, column);
 
-                foreach (var elementKey in _layoutModel.Locate(index))
+                foreach (var pair in _locationMap)
                 {
-                    var vCell = _lastGrid.FindCell(elementKey);
-                    if (vCell == null)
-                        continue;
+                    if (pair.Value.Part == GridPart.Body && pair.Value.Index == index)
+                    {
+                        var elementKey = pair.Key;
 
-                    var action = vCell.Attributes["A_ON_CHANGED"] as Action<object>;
-                    if (action == null)
-                        continue;
+                        var action = _renderContext.GetElementAttribute<Action<object>>(elementKey, "A_ON_CHANGED", null);
+                        if (action == null)
+                            continue;
 
-                    var value = _inner.Rows[row.Row].Cells[column.Column].Value;
-
-                    _dispatch(vCell.ElementKey, () => action(value));
+                        _dispatch(elementKey, () => action(value));
+                    }
                 }
             };
         }
 
-        public void Render(VGrid grid)
+        private void DiffHeaderLayoutCore(GridPivots oldPivots, IGridLayoutNode newLayout, out GridPivots newPivots, List<GridLayoutDelta> diff)
         {
-            var measure = grid.Body.Measure(GridMeasure.Infinite, _layoutModel);
+            var measure = _layoutContext.Measure(newLayout, GridMeasure.Infinite);
+
             var range = GridRange.Create(GridVector.Zero, measure);
+            _layoutContext.Arrange(newLayout, range);
 
-            grid.Body.Arrange(range, _layoutModel);
+            newPivots = _layoutContext.GetPivots(newLayout);
+            new GridLayoutDiffer(oldPivots, newPivots, diff).MakeDiff();
+        }
 
-            // 余った列を削除する。
-            for (var i = _inner.Columns.Count; i > measure.Column;)
-            {
-                i--;
+        private void UpdateColumnHeaderLayout(IGridLayoutBuilder columnHeader, List<GridLayoutDelta> diff)
+        {
+            var newLayout = columnHeader.ToGridLayoutNode();
+            GridPivots newPivots;
 
-                Debug.WriteLine("Remove column");
-                _inner.Columns.RemoveAt(i);
-            }
+            DiffHeaderLayoutCore(_columnHeaderPivots, newLayout, out newPivots, diff);
 
-            // 足りない列を追加する。
-            for (var i = _inner.Columns.Count; i < measure.Column; i++)
-            {
-                Debug.WriteLine("Add column");
-                _inner.Columns.Add(i.ToString(), i.ToString());
-            }
+            _columnHeaderLayout = newLayout;
+            _columnHeaderPivots = newPivots;
+        }
 
-            // 余った行を削除する。
-            for (var i = _inner.Rows.Count; i > measure.Row;)
-            {
-                i--;
+        private void UpdateRowHeaderLayout(IGridLayoutBuilder rowHeader, List<GridLayoutDelta> diff)
+        {
+            var newLayout = rowHeader.ToGridLayoutNode();
+            GridPivots newPivots;
 
-                if (!_inner.Rows[i].IsNewRow)
-                {
-                    Debug.WriteLine("Remove row");
-                    _inner.Rows.RemoveAt(i);
-                }
-            }
+            DiffHeaderLayoutCore(_rowHeaderPivots, newLayout, out newPivots, diff);
 
-            // 足りない行を追加する。
-            for (var i = _inner.Rows.Count; i < measure.Row; i++)
-            {
-                Debug.WriteLine("Add row");
-                _inner.Rows.Add();
-            }
+            _rowHeaderLayout = newLayout;
+            _rowHeaderPivots = newPivots;
+        }
 
-            // セルを更新する。
-            foreach (var vCell in grid.Cells)
-            {
-                var point = _layoutModel.Touch(vCell.ElementKey).LastArrange.Start;
+        private void UpdateBodyLayout(GridBuilder grid)
+        {
+            // FIXME: ボディーのレイアウトを実装
+        }
 
-                var cellElement = _inner.Rows[point.Row.Row].Cells[point.Column.Column];
+        private void UpdateAttributes(List<GridAttributeDelta> attributeDiff)
+        {
+            var newBindings = _renderContext.GetAttributeBindings();
 
-                if (!EqualityComparer<object>.Default.Equals(cellElement.Value, vCell.Value))
-                {
-                    Debug.WriteLine("Cell[{0}].Value = {1}", point.AsDebug, vCell.Value);
-                    cellElement.Value = vCell.Value;
-                }
+            new GridAttributeDiffer(_oldBindings, newBindings, attributeDiff).MakeDiff();
 
-                var readOnly = vCell.Attributes["A_READ_ONLY"] as bool? == true;
-                if (cellElement.ReadOnly != readOnly)
-                {
-                    cellElement.ReadOnly = readOnly;
-                }
-            }
+            _oldBindings = newBindings;
+        }
 
-            _lastGrid = grid;
+        public void Render(GridBuilder grid)
+        {
+            var columnHeaderLayoutDiff = new List<GridLayoutDelta>();
+            var rowHeaderLayoutDiff = new List<GridLayoutDelta>();
+            var attributeDiff = new List<GridAttributeDelta>();
+
+            _layoutContext.Clear();
+
+            UpdateColumnHeaderLayout(grid.ColumnHeader, columnHeaderLayoutDiff);
+            UpdateRowHeaderLayout(grid.RowHeader, rowHeaderLayoutDiff);
+            UpdateBodyLayout(grid);
+            UpdateLocationMap();
+            UpdateAttributes(attributeDiff);
+
+            ApplyGridLayoutDiff(GridPart.ColumnHeader, columnHeaderLayoutDiff);
+            ApplyGridLayoutDiff(GridPart.RowHeader, rowHeaderLayoutDiff);
+            ApplyAttributeDiff(attributeDiff);
         }
     }
 }

@@ -16,6 +16,8 @@ namespace VirtualGrid
     {
         public readonly int Column;
 
+        public static ColumnIndex MaxValue = From(int.MaxValue);
+
         private ColumnIndex(int column)
         {
             Column = column;

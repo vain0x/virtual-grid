@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace VirtualGrid
 {
+    /// <summary>
+    /// 配列に構造的同値性を入れたもの。(各要素の値が等しい ArrayTuple 同士は等しいとみなす。)
+    /// </summary>
     [DebuggerDisplay("[Length = {Count}]")]
     public sealed class ArrayTuple<T>
         : IEquatable<ArrayTuple<T>>
@@ -58,11 +61,18 @@ namespace VirtualGrid
 
         public static ArrayTuple<T> From<T>(T[] array)
         {
+            if (array == null)
+                throw new ArgumentNullException("array");
+
             return new ArrayTuple<T>(array);
         }
 
         public static ArrayTuple<T> From<T>(IEnumerable<T> source)
         {
+            var array = source as T[];
+            if (array != null)
+                return From(array);
+
             return From(source.ToArray());
         }
     }

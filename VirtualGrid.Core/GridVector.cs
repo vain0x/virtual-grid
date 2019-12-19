@@ -7,9 +7,11 @@ using System.Threading.Tasks;
 
 namespace VirtualGrid
 {
+    /// <summary>
+    /// 2次元グリッド上のベクトル。位置や大きさを表す。
+    /// </summary>
     [DebuggerDisplay("{AsDebug}")]
-    public struct GridVector
-        : IEquatable<GridVector>
+    public struct GridVector : IEquatable<GridVector>
     {
         public readonly RowIndex Row;
 
@@ -44,38 +46,6 @@ namespace VirtualGrid
             }
         }
 
-        #region equality
-
-        public bool Equals(GridVector other)
-        {
-            return Row == other.Row && Column == other.Column;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is GridVector && Equals((GridVector)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            var hashCode = 240067226;
-            hashCode = hashCode * -1521134295 + EqualityComparer<RowIndex>.Default.GetHashCode(Row);
-            hashCode = hashCode * -1521134295 + EqualityComparer<ColumnIndex>.Default.GetHashCode(Column);
-            return hashCode;
-        }
-
-        public static bool operator ==(GridVector left, GridVector right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(GridVector left, GridVector right)
-        {
-            return !(left == right);
-        }
-
-        #endregion
-
         public static GridVector operator -(GridVector first)
         {
             return (-1) * first;
@@ -94,6 +64,16 @@ namespace VirtualGrid
         public static GridVector operator *(int first, GridVector second)
         {
             return Create(first * second.Row, first * second.Column);
+        }
+
+        public static bool operator ==(GridVector left, GridVector right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(GridVector left, GridVector right)
+        {
+            return !(left == right);
         }
 
         public string AsDebug
@@ -127,6 +107,25 @@ namespace VirtualGrid
         public GridRange To(GridVector end)
         {
             return GridRange.Create(this, end);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is GridVector vector && Equals(vector);
+        }
+
+        public bool Equals(GridVector other)
+        {
+            return Row.Equals(other.Row) &&
+                   Column.Equals(other.Column);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 240067226;
+            hashCode = hashCode * -1521134295 + Row.GetHashCode();
+            hashCode = hashCode * -1521134295 + Column.GetHashCode();
+            return hashCode;
         }
     }
 }

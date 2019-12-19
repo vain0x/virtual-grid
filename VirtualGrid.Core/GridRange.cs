@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace VirtualGrid
 {
+    /// <summary>
+    /// 2次元グリッド上の範囲
+    /// </summary>
     [DebuggerDisplay("{AsDebug}")]
     public struct GridRange
         : IEquatable<GridRange>
@@ -83,8 +86,6 @@ namespace VirtualGrid
             return Create(start, end);
         }
 
-        #region equality
-
         public override bool Equals(object obj)
         {
             return obj is GridRange range && Equals(range);
@@ -99,8 +100,8 @@ namespace VirtualGrid
         public override int GetHashCode()
         {
             var hashCode = -1676728671;
-            hashCode = hashCode * -1521134295 + EqualityComparer<GridVector>.Default.GetHashCode(Start);
-            hashCode = hashCode * -1521134295 + EqualityComparer<GridVector>.Default.GetHashCode(End);
+            hashCode = hashCode * -1521134295 + Start.GetHashCode();
+            hashCode = hashCode * -1521134295 + End.GetHashCode();
             return hashCode;
         }
 
@@ -113,7 +114,5 @@ namespace VirtualGrid
         {
             return !(left == right);
         }
-
-        #endregion
     }
 }

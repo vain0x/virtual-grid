@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace VirtualGrid
 {
+    /// <summary>
+    /// グリッドの有限または無限の大きさ
+    /// </summary>
     [DebuggerDisplay("{AsDebug}")]
     public struct GridMeasure
         : IEquatable<GridMeasure>

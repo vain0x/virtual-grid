@@ -21,6 +21,8 @@ namespace VirtualGrid
             Row = row;
         }
 
+        public static readonly RowIndex MaxValue = From(Int32.MaxValue);
+
         public static RowIndex From(int row)
         {
             return new RowIndex(row);

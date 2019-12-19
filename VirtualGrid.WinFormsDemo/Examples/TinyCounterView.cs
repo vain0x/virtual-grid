@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VirtualGrid.Layouts;
-using VirtualGrid.Models;
+using VirtualGrid.Rendering;
 
 namespace VirtualGrid.WinFormsDemo.Examples
 {
@@ -12,48 +12,50 @@ namespace VirtualGrid.WinFormsDemo.Examples
     {
         readonly TinyCounterModel _model;
 
-        readonly VGridBuilder _h;
+        readonly GridBuilder _h;
 
-        public TinyCounterView(TinyCounterModel model, VGridBuilder h)
+        public TinyCounterView(TinyCounterModel model, GridBuilder h)
         {
             _model = model;
             _h = h;
         }
 
-        void Increment()
+        public void Render()
         {
-            _model.Increment();
-        }
+            var ch = _h.ColumnHeader;
+            var rh = _h.RowHeader;
+            var body = _h.Body;
 
-        void Decrement()
-        {
-            _model.Decrement();
-        }
+            // カラムヘッダー
+            var incrementButtonColumn = ch
+                .WithKey("?追加ボタン列")
+                .AddCell();
 
-        public IGridLayoutProvider Render()
-        {
-            var body = _h.NewColumn();
+            var decrementButtonColumn = ch
+                .WithKey("?削除ボタン列")
+                .AddCell();
+
+            var countColumn = ch
+                .WithKey("?カウント列")
+                .AddText("カウント");
+
+            // 1行目
             {
-                var row = _h.NewRow();
-                row.Add(_h.NewText(""));
-                row.Add(_h.NewText(""));
-                row.Add(_h.NewText("Count"));
-                body.Add(row);
+                var row = rh
+                    .WithKey("?1行目")
+                    .AddCell();
+
+                body.At(row, incrementButtonColumn)
+                    .AddButton("[+]")
+                    .OnClick(() => _model.Increment());
+
+                body.At(row, decrementButtonColumn)
+                    .AddButton("[-]")
+                    .OnClick(() => _model.Decrement());
+
+                body.At(row, countColumn)
+                    .AddText(_model.Count.ToString());
             }
-
-            {
-                var increment = _h.NewButton("[+]").OnClick(Increment);
-                var decrement = _h.NewButton("[-]").OnClick(Decrement);
-
-                var count = _h.NewText(_model.Count.ToString());
-
-                var row = _h.NewRow();
-                row.Add(increment);
-                row.Add(decrement);
-                row.Add(count);
-                body.Add(row);
-            }
-            return body;
         }
     }
 }

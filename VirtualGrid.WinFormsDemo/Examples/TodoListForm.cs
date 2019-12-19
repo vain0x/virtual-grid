@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using VirtualGrid.Models;
+using VirtualGrid.Rendering;
 
 namespace VirtualGrid.WinFormsDemo.Examples
 {
@@ -35,16 +36,14 @@ namespace VirtualGrid.WinFormsDemo.Examples
         private void Dispatch(object _elementKey, Action action)
         {
             action();
-
             BeginInvoke(new Action(Render));
         }
 
         private void Render()
         {
-            var h = new VGridBuilder();
-            var body = new TodoListView(_model, h).Render();
-            var grid = h.Finish().WithBody(body);
-            _gridProvider.Render(grid);
+            var h = _gridProvider.GetBuilder();
+            new TodoListView(_model, h).Render();
+            _gridProvider.Render(h);
         }
 
         protected override void OnLoad(EventArgs e)

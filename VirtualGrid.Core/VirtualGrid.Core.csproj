@@ -47,32 +47,38 @@
     <Compile Include="ColumnMeasure.cs" />
     <Compile Include="DebugString.cs" />
     <Compile Include="DefaultDictionary.cs" />
-    <Compile Include="Layouts\CellGridLayout.cs" />
-    <Compile Include="Layouts\EmptyGridLayout.cs" />
-    <Compile Include="Diff\GridLayoutDelta.cs" />
-    <Compile Include="Diff\GridDiffer.cs" />
+    <Compile Include="GridLocation.cs" />
+    <Compile Include="GridPart.cs" />
+    <Compile Include="Layouts\GridLayoutDelta.cs" />
+    <Compile Include="Layouts\GridLayoutDeltaKind.cs" />
+    <Compile Include="Layouts\Nodes\CellGridLayoutNode.cs" />
+    <Compile Include="Layouts\Nodes\EmptyGridLayoutNode.cs" />
     <Compile Include="GridMeasure.cs" />
     <Compile Include="GridRange.cs" />
     <Compile Include="GridVector.cs" />
-    <Compile Include="Layouts\GridLayoutElement.cs" />
-    <Compile Include="Layouts\GridLayoutStackInterface.cs" />
-    <Compile Include="Layouts\GridLayoutModel.cs" />
-    <Compile Include="Layouts\HorizontalLinkGridLayout.cs" />
-    <Compile Include="Layouts\KeyRangePair.cs" />
-    <Compile Include="Layouts\VerticalLinkGridLayout.cs" />
-    <Compile Include="Layouts\GridLayoutInterface.cs" />
-    <Compile Include="Diff\AttributeDelta.cs" />
-    <Compile Include="Models\Models.cs" />
-    <Compile Include="Models\VCell.cs" />
-    <Compile Include="Models\VGrid.cs" />
-    <Compile Include="Models\VGridBuilder.cs" />
+    <Compile Include="Layouts\GridLayoutContext.cs" />
+    <Compile Include="Layouts\GridLayoutDiffer.cs" />
+    <Compile Include="Layouts\GridPivots.cs" />
+    <Compile Include="Layouts\Nodes\HorizontalLinkGridLayoutNode.cs" />
+    <Compile Include="Layouts\GridLayoutBuilderInterface.cs" />
+    <Compile Include="Layouts\Nodes\VerticalLinkGridLayoutNode.cs" />
+    <Compile Include="Layouts\GridLayoutNodeInterface.cs" />
     <Compile Include="Pair.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rendering\GridAttributeBinding.cs" />
+    <Compile Include="Rendering\GridAttributeDelta.cs" />
+    <Compile Include="Rendering\GridAttributeDeltaKind.cs" />
+    <Compile Include="Rendering\GridAttributeDiffer.cs" />
+    <Compile Include="Rendering\GridBodyBuilder.cs" />
+    <Compile Include="Rendering\GridBuilder.cs" />
+    <Compile Include="Rendering\GridCellAdderExtensions.cs" />
+    <Compile Include="Rendering\GridHeaderBuilder.cs" />
+    <Compile Include="Rendering\GridRenderContext.cs" />
+    <Compile Include="Rendering\GridCellAdderInterface.cs" />
+    <Compile Include="Rendering\GridCellBuilderInterface.cs" />
     <Compile Include="RowIndex.cs" />
     <Compile Include="RowMeasure.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Styles\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

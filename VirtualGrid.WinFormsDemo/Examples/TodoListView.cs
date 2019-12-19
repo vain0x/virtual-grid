@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VirtualGrid.Layouts;
-using VirtualGrid.Models;
+using VirtualGrid.Rendering;
 
 namespace VirtualGrid.WinFormsDemo.Examples
 {
@@ -13,70 +13,86 @@ namespace VirtualGrid.WinFormsDemo.Examples
     {
         private readonly TodoListModel _model;
 
-        private readonly VGridBuilder _h;
+        private readonly GridBuilder _h;
 
-        public TodoListView(TodoListModel model, VGridBuilder h)
+        public TodoListView(TodoListModel model, GridBuilder h)
         {
             _model = model;
             _h = h;
         }
 
-        public IGridLayoutProvider Render()
+        public void Render()
         {
-            var body = _h.NewColumn();
+            // カラムヘッダー
+            var ch = _h.ColumnHeader;
 
-            {
-                var row = _h.NewRow();
+            var checkColumn = ch
+                .WithKey("?チェック列")
+                .AddText("[✔]");
 
-                row.Add(_h.NewText("[✔]", "?チェック列"));
-                row.Add(_h.NewText("テキスト", "?テキスト列"));
-                row.Add(_h.NewText("操作", "?追加ボタン列"));
-                row.Add(_h.NewText("", "?削除ボタン列"));
+            var textColumn = ch
+                .WithKey("?テキスト列")
+                .AddText("テキスト");
 
-                body.Add(row);
-            }
+            var addButtonColumn = ch
+                .WithKey("?追加ボタン列")
+                .AddText("操作");
+
+            var deleteButtonColumn = ch
+                .WithKey("?削除ボタン列")
+                .AddText("");
+
+            // ローヘッダーとボディー
+            var rh = _h.RowHeader;
+            var body = _h.Body;
 
             foreach (var item in _model.Items)
             {
-                var row = _h.NewRow();
+                var row = rh
+                    .WithKey(item)
+                    .AddText("");
 
-                row.Add(_h.NewText("[ ]"));
+                body.At(row, checkColumn)
+                    .AddText("[ ]");
 
-                row.Add(_h.NewEdit(item.Text, item).OnTextChanged(text =>
-                {
-                    _model.SetItemText(item, text);
-                }));
+                body.At(row, textColumn)
+                    .AddEdit(item.Text)
+                    .OnTextChanged(text =>
+                    {
+                        _model.SetItemText(item, text);
+                    });
 
-                row.Add(_h.NewText("[上に追加]").OnClick(() =>
-                {
-                    _model.InsertBefore(item);
-                }));
+                body.At(row, addButtonColumn)
+                    .AddText("[上に追加]")
+                    .OnClick(() =>
+                    {
+                        _model.InsertBefore(item);
+                    });
 
-                row.Add(_h.NewText("[削除]").OnClick(() =>
-                {
-                    _model.Remove(item);
-                }));
-
-                body.Add(row);
+                body.At(row, deleteButtonColumn)
+                    .AddText("[削除]")
+                    .OnClick(() =>
+                    {
+                        _model.Remove(item);
+                    });
             }
 
             // 新規追加
             {
-                var row = _h.NewRow();
+                var row = rh
+                    .WithKey("?新規追加行")
+                    .AddText("");
 
-                row.Add(_h.NewText(""));
-                row.Add(_h.NewText(""));
+                body.At(row, addButtonColumn)
+                    .AddText("[上に追加]")
+                    .OnClick(() =>
+                    {
+                        _model.InsertLast();
+                    });
 
-                row.Add(_h.NewText("[上に追加]").OnClick(() =>
-                {
-                    _model.InsertLast();
-                }));
-
-                row.Add(_h.NewText(string.Format("{0}件", _model.NonBlankCount()), "?小計"));
-
-                body.Add(row);
+                body.At(row, deleteButtonColumn)
+                    .AddText(string.Format("{0}件", _model.NonBlankCount()));
             }
-            return body;
         }
     }
 }
