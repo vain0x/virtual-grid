@@ -1,6 +1,4 @@
 using System;
-using System.Diagnostics;
-using VirtualGrid.Rendering;
 
 namespace VirtualGrid.Rendering
 {

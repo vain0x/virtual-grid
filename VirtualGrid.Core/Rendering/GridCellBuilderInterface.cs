@@ -25,17 +25,6 @@ namespace VirtualGrid.Rendering
             Context = context;
         }
 
-        private void SetAttribute(string attribute, object value)
-        {
-            Context.SetElementAttribute(ElementKey, attribute, value);
-        }
-
-        public IGridCellBuilder<TProvider> SetValue(object value)
-        {
-            SetAttribute("A_VALUE", value);
-            return this;
-        }
-
         IGridLayoutNode IGridLayoutBuilder.ToGridLayoutNode()
         {
             return new CellGridLayoutNode(ElementKey);

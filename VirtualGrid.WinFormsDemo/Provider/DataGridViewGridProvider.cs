@@ -42,9 +42,6 @@ namespace VirtualGrid.WinFormsDemo
         private IGridLayoutNode _bodyLayout =
             GridLayoutNode.Empty("?_EMPTY_BODY");
 
-        private GridAttributeBinding[] _oldBindings =
-            Array.Empty<GridAttributeBinding>();
-
         internal IDictionary<object, GridLocation> _locationMap =
             new Dictionary<object, GridLocation>();
 
@@ -273,74 +270,6 @@ namespace VirtualGrid.WinFormsDemo
             }
         }
 
-
-        private void AddAttribute(GridLocation location, string attribute, object value)
-        {
-            ChangeAttribute(location, attribute, value);
-        }
-
-        private void RemoveAttribute(GridLocation location, string attribute)
-        {
-            ChangeAttribute(location, attribute, null);
-        }
-
-        private void ChangeAttribute(GridLocation location, string attribute, object value)
-        {
-            DataGridViewCell cell;
-            if (!_inner.GetCell(location, out cell))
-                return;
-
-            switch (attribute)
-            {
-                case "A_VALUE":
-                    if (!EqualityComparer<object>.Default.Equals(cell.Value, value))
-                    {
-                        cell.Value = value;
-                    }
-                    return;
-
-                default:
-                    // Debug.WriteLine("Unknown attribute " + attribute);
-                    return;
-            }
-        }
-
-        private void ApplyAttributeDelta(GridAttributeDelta delta)
-        {
-            GridLocation location;
-            if (!_locationMap.TryGetValue(delta.ElementKey, out location))
-            {
-                Debug.WriteLine("Unknown cell {0} at {1}", delta.ElementKey, location);
-                return;
-            }
-
-            switch (delta.Kind)
-            {
-                case GridAttributeDeltaKind.Add:
-                    AddAttribute(location, delta.Attribute, delta.Value);
-                    return;
-
-                case GridAttributeDeltaKind.Remove:
-                    RemoveAttribute(location, delta.Attribute);
-                    return;
-
-                case GridAttributeDeltaKind.Change:
-                    ChangeAttribute(location, delta.Attribute, delta.Value);
-                    return;
-
-                default:
-                    throw new Exception("Unknown GridAttributeDeltaKind");
-            }
-        }
-
-        private void ApplyAttributeDiff(List<GridAttributeDelta> diff)
-        {
-            foreach (var delta in diff)
-            {
-                ApplyAttributeDelta(delta);
-            }
-        }
-
         private void SubscribeEvents()
         {
             _inner.CellClick += (sender, ev) =>
@@ -454,20 +383,10 @@ namespace VirtualGrid.WinFormsDemo
             // FIXME: ボディーのレイアウトを実装
         }
 
-        private void UpdateAttributes(List<GridAttributeDelta> attributeDiff)
-        {
-            var newBindings = _renderContext.GetAttributeBindings();
-
-            new GridAttributeDiffer(_oldBindings, newBindings, attributeDiff).MakeDiff();
-
-            _oldBindings = newBindings;
-        }
-
         public void Render(GridBuilder<DataGridViewGridProvider> grid)
         {
             var columnHeaderLayoutDiff = new List<GridLayoutDelta>();
             var rowHeaderLayoutDiff = new List<GridLayoutDelta>();
-            var attributeDiff = new List<GridAttributeDelta>();
 
             _layoutContext.Clear();
 
@@ -475,11 +394,9 @@ namespace VirtualGrid.WinFormsDemo
             UpdateRowHeaderLayout(grid.RowHeader, rowHeaderLayoutDiff);
             UpdateBodyLayout(grid);
             UpdateLocationMap();
-            UpdateAttributes(attributeDiff);
 
             ApplyGridLayoutDiff(GridPart.ColumnHeader, columnHeaderLayoutDiff);
             ApplyGridLayoutDiff(GridPart.RowHeader, rowHeaderLayoutDiff);
-            ApplyAttributeDiff(attributeDiff);
 
             IsCheckedAttribute.ApplyDiff();
             OnCheckChangedAttribute.ApplyDiff();
