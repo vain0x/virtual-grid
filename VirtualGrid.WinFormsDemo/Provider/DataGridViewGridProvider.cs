@@ -17,6 +17,8 @@ namespace VirtualGrid.WinFormsDemo
 
         public readonly IsCheckedAttributeProvider IsCheckedAttribute;
 
+        public readonly OnCheckChangedAttributeProvider OnCheckChangedAttribute;
+
         public readonly OnClickAttributeProvider OnClickAttribute;
 
         public readonly OnTextChangedAttributeProvider OnTextChangedAttribute;
@@ -58,6 +60,8 @@ namespace VirtualGrid.WinFormsDemo
             _inner = inner;
 
             IsCheckedAttribute = new IsCheckedAttributeProvider(this);
+
+            OnCheckChangedAttribute = new OnCheckChangedAttributeProvider(this);
 
             OnClickAttribute = new OnClickAttributeProvider(this);
 
@@ -361,18 +365,20 @@ namespace VirtualGrid.WinFormsDemo
                         if (IsCheckedAttribute.IsAttached(elementKey))
                         {
                             var isChecked = IsCheckedAttribute.GetValue(elementKey);
-                            var changedAction = _renderContext.GetElementAttribute<Action<object>>(elementKey, "A_ON_CHANGED", null);
-                            if (changedAction != null)
+                            var action = OnCheckChangedAttribute.GetValue(elementKey);
+                            if (action != null)
                             {
-                                _dispatch(elementKey, () => changedAction(!isChecked));
+                                _dispatch(elementKey, () => action(!isChecked));
                             }
                         }
 
-                        var action = OnClickAttribute.GetValue(elementKey);
-                        if (action == null)
-                            continue;
+                        {
+                            var action = OnClickAttribute.GetValue(elementKey);
+                            if (action == null)
+                                continue;
 
-                        _dispatch(elementKey, action);
+                            _dispatch(elementKey, action);
+                        }
                     }
                 }
             };
@@ -403,14 +409,6 @@ namespace VirtualGrid.WinFormsDemo
                                 {
                                     _dispatch(elementKey, () => action(text ?? ""));
                                 }
-                            }
-                        }
-
-                        {
-                            var action = _renderContext.GetElementAttribute<Action<object>>(elementKey, "A_ON_CHANGED", null);
-                            if (action != null)
-                            {
-                                _dispatch(elementKey, () => action(value));
                             }
                         }
                     }
@@ -484,6 +482,7 @@ namespace VirtualGrid.WinFormsDemo
             ApplyAttributeDiff(attributeDiff);
 
             IsCheckedAttribute.ApplyDiff();
+            OnCheckChangedAttribute.ApplyDiff();
             OnClickAttribute.ApplyDiff();
             OnTextChangedAttribute.ApplyDiff();
             ReadOnlyAttribute.ApplyDiff();

@@ -12,6 +12,12 @@ namespace VirtualGrid.WinFormsDemo
             return self;
         }
 
+        public static IGridCellBuilder<P> OnCheckChanged(this IGridCellBuilder<P> self, Action<bool> action)
+        {
+            self.Provider.OnCheckChangedAttribute.SetValue(self.ElementKey, action);
+            return self;
+        }
+
         public static IGridCellBuilder<P> OnClick(this IGridCellBuilder<P> self, Action action)
         {
             self.Provider.OnClickAttribute.SetValue(self.ElementKey, action);

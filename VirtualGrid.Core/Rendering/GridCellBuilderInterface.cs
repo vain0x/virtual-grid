@@ -36,19 +36,6 @@ namespace VirtualGrid.Rendering
             return this;
         }
 
-        public IGridCellBuilder<TProvider> OnCheckChanged(Action<bool> action)
-        {
-            SetAttribute("A_ON_CHANGED", new Action<object>(value =>
-            {
-                var isChecked = value as bool?;
-                if (isChecked != null)
-                {
-                    action(isChecked.Value);
-                }
-            }));
-            return this;
-        }
-
         IGridLayoutNode IGridLayoutBuilder.ToGridLayoutNode()
         {
             return new CellGridLayoutNode(ElementKey);
