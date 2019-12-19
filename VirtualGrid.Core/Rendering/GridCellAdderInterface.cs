@@ -2,22 +2,22 @@ using System;
 
 namespace VirtualGrid.Rendering
 {
-    public interface IGridCellAdder
+    public interface IGridCellAdder<TProvider>
     {
-        IGridCellBuilder AddCell();
+        IGridCellBuilder<TProvider> AddCell();
     }
 
-    internal sealed class AnonymousGridCellAdder
-        : IGridCellAdder
+    internal sealed class AnonymousGridCellAdder<TProvider>
+        : IGridCellAdder<TProvider>
     {
-        private Func<IGridCellBuilder> _newCell;
+        private Func<IGridCellBuilder<TProvider>> _newCell;
 
-        public AnonymousGridCellAdder(Func<IGridCellBuilder> newCell)
+        public AnonymousGridCellAdder(Func<IGridCellBuilder<TProvider>> newCell)
         {
             _newCell = newCell;
         }
 
-        public IGridCellBuilder AddCell()
+        public IGridCellBuilder<TProvider> AddCell()
         {
             return _newCell();
         }

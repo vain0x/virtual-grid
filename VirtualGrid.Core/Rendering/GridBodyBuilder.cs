@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 
 namespace VirtualGrid.Rendering
 {
-    public sealed class GridBodyBuilder
+    public sealed class GridBodyBuilder<TProvider>
     {
-        private GridRenderContext _context;
+        private GridRenderContext<TProvider> _context;
 
-        public GridBodyBuilder(GridRenderContext context)
+        public GridBodyBuilder(GridRenderContext<TProvider> context)
         {
             _context = context;
 
@@ -15,12 +15,12 @@ namespace VirtualGrid.Rendering
 
         public object ElementKey { get; set; }
 
-        public IGridCellAdder At(IGridCellBuilder row, IGridCellBuilder column)
+        public IGridCellAdder<TProvider> At(IGridCellBuilder<TProvider> row, IGridCellBuilder<TProvider> column)
         {
-            return new AnonymousGridCellAdder(() =>
+            return new AnonymousGridCellAdder<TProvider>(() =>
             {
                 var elementKey = Tuple.Create(row.ElementKey, column.ElementKey);
-                var cell = new IGridCellBuilder(elementKey, _context);
+                var cell = new IGridCellBuilder<TProvider>(elementKey, _context);
                 _context.AddCell(GridPart.Body, row.ElementKey, column.ElementKey, elementKey);
                 return cell;
             });

@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataGridViewExtensions.cs" />
     <Compile Include="DataGridViewGridProvider.cs" />
     <Compile Include="Examples\TinyCounterForm.cs">
       <SubType>Form</SubType>
@@ -63,6 +64,10 @@
     </Compile>
     <Compile Include="Examples\TodoListModel.cs" />
     <Compile Include="Examples\TodoListView.cs" />
+    <Compile Include="GridAttributeDataDiffer.cs" />
+    <Compile Include="GridAttributeProviderBase.cs" />
+    <Compile Include="GridCellAdderExtensions.cs" />
+    <Compile Include="GridCellBuilderExtensions.cs" />
     <Compile Include="MainMenuForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -71,6 +76,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TextAttributeProvider.cs" />
     <EmbeddedResource Include="MainMenuForm.resx">
       <DependentUpon>MainMenuForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -102,5 +108,6 @@
       <Name>VirtualGrid.Core</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

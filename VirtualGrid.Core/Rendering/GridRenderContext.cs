@@ -9,7 +9,7 @@ namespace VirtualGrid.Rendering
     /// <summary>
     /// レンダリング時のデータを管理するもの。
     /// </summary>
-    public sealed class GridRenderContext
+    public sealed class GridRenderContext<TProvider>
     {
         // row key, column key, element key
         public readonly List<Tuple<GridPart, object, object, object>> _cells =
@@ -17,6 +17,13 @@ namespace VirtualGrid.Rendering
 
         internal readonly DefaultDictionary<Tuple<object, string>, object> Attributes =
             new DefaultDictionary<Tuple<object, string>, object>(_ => null);
+
+        public readonly TProvider Provider;
+
+        public GridRenderContext(TProvider provider)
+        {
+            Provider = provider;
+        }
 
         public void AddCell(GridPart part, object rowKey, object columnKey, object elementKey)
         {

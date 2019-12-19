@@ -9,16 +9,16 @@ namespace VirtualGrid.Rendering
     ///
     /// カラムヘッダーなら横に、ローヘッダーなら縦に要素を積んでいく。
     /// </summary>
-    public sealed class GridHeaderBuilder
+    public sealed class GridHeaderBuilder<TProvider>
         : IGridLayoutBuilder
     {
         private List<IGridLayoutBuilder> _layouts;
 
         private bool _horizontal;
 
-        private GridRenderContext _context;
+        private GridRenderContext<TProvider> _context;
 
-        public GridHeaderBuilder(List<IGridLayoutBuilder> layouts, bool horizontal, GridRenderContext context)
+        public GridHeaderBuilder(List<IGridLayoutBuilder> layouts, bool horizontal, GridRenderContext<TProvider> context)
         {
             _layouts = layouts;
             _horizontal = horizontal;
@@ -35,11 +35,11 @@ namespace VirtualGrid.Rendering
             }
         }
 
-        public IGridCellAdder WithKey(object elementKey)
+        public IGridCellAdder<TProvider> WithKey(object elementKey)
         {
-            return new AnonymousGridCellAdder(() =>
+            return new AnonymousGridCellAdder<TProvider>(() =>
             {
-                var cell = new IGridCellBuilder(elementKey, _context);
+                var cell = new IGridCellBuilder<TProvider>(elementKey, _context);
                 _layouts.Add(cell);
                 _context.AddCell(GridPart, null, null, elementKey);
                 return cell;

@@ -4,22 +4,25 @@ using VirtualGrid.Layouts;
 namespace VirtualGrid.Rendering
 {
     // FIXME: インターフェイスにする
-    public sealed class IGridCellBuilder
+    public sealed class IGridCellBuilder<TProvider>
         : IGridLayoutBuilder
     {
-        internal object ElementKey;
+        public object ElementKey;
 
-        internal GridRenderContext Context;
+        internal GridRenderContext<TProvider> Context;
 
-        public IGridCellBuilder(object elementKey, GridRenderContext context)
+        public TProvider Provider
+        {
+            get
+            {
+                return Context.Provider;
+            }
+        }
+
+        public IGridCellBuilder(object elementKey, GridRenderContext<TProvider> context)
         {
             ElementKey = elementKey;
             Context = context;
-        }
-
-        internal string GetText()
-        {
-            return Context.GetElementAttribute(ElementKey, "A_VALUE", "");
         }
 
         private void SetAttribute(string attribute, object value)
@@ -27,37 +30,31 @@ namespace VirtualGrid.Rendering
             Context.SetElementAttribute(ElementKey, attribute, value);
         }
 
-        public IGridCellBuilder SetReadOnly(bool isReadOnly)
+        public IGridCellBuilder<TProvider> SetReadOnly(bool isReadOnly)
         {
             SetAttribute("A_READ_ONLY", isReadOnly);
             return this;
         }
 
-        public IGridCellBuilder SetText(string text)
-        {
-            SetAttribute("A_VALUE", text);
-            return this;
-        }
-
-        public IGridCellBuilder SetValue(object value)
+        public IGridCellBuilder<TProvider> SetValue(object value)
         {
             SetAttribute("A_VALUE", value);
             return this;
         }
 
-        public IGridCellBuilder SetIsChecked(bool isChecked)
+        public IGridCellBuilder<TProvider> SetIsChecked(bool isChecked)
         {
             SetAttribute("A_IS_CHECKED", isChecked);
             return this;
         }
 
-        public IGridCellBuilder OnClick(Action action)
+        public IGridCellBuilder<TProvider> OnClick(Action action)
         {
             SetAttribute("A_ON_CLICK", action);
             return this;
         }
 
-        public IGridCellBuilder OnTextChanged(Action<string> action)
+        public IGridCellBuilder<TProvider> OnTextChanged(Action<string> action)
         {
             SetAttribute("A_ON_CHANGED", new Action<object>(value =>
             {
@@ -70,7 +67,7 @@ namespace VirtualGrid.Rendering
             return this;
         }
 
-        public IGridCellBuilder OnCheckChanged(Action<bool> action)
+        public IGridCellBuilder<TProvider> OnCheckChanged(Action<bool> action)
         {
             SetAttribute("A_ON_CHANGED", new Action<object>(value =>
             {

@@ -13,9 +13,9 @@ namespace VirtualGrid.WinFormsDemo.Examples
     {
         private readonly TodoListModel _model;
 
-        private readonly GridBuilder _h;
+        private readonly GridBuilder<DataGridViewGridProvider> _h;
 
-        public TodoListView(TodoListModel model, GridBuilder h)
+        public TodoListView(TodoListModel model, GridBuilder<DataGridViewGridProvider> h)
         {
             _model = model;
             _h = h;

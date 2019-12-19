@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,7 +13,9 @@ namespace VirtualGrid.WinFormsDemo
     public sealed class DataGridViewGridProvider
         : IGridProvider
     {
-        private readonly DataGridView _inner;
+        internal readonly DataGridView _inner;
+
+        public readonly TextAttributeProvider TextAttribute;
 
         private IGridLayoutNode _columnHeaderLayout =
             GridLayoutNode.Empty("?_EMPTY_COLUMN_HEADER");
@@ -34,20 +35,23 @@ namespace VirtualGrid.WinFormsDemo
         private GridAttributeBinding[] _oldBindings =
             Array.Empty<GridAttributeBinding>();
 
-        private IDictionary<object, GridLocation> _locationMap =
+        internal IDictionary<object, GridLocation> _locationMap =
             new Dictionary<object, GridLocation>();
 
         private readonly GridLayoutContext _layoutContext =
             new GridLayoutContext();
 
-        private readonly GridRenderContext _renderContext =
-            new GridRenderContext();
+        private readonly GridRenderContext<DataGridViewGridProvider> _renderContext;
 
         private readonly Action<object, Action> _dispatch;
 
         public DataGridViewGridProvider(DataGridView inner, Action<object, Action> dispatch)
         {
             _inner = inner;
+
+            TextAttribute = new TextAttributeProvider(this);
+
+            _renderContext = new GridRenderContext<DataGridViewGridProvider>(this);
 
             _dispatch = (elementKey, action) =>
             {
@@ -83,10 +87,10 @@ namespace VirtualGrid.WinFormsDemo
             }
         }
 
-        public GridBuilder GetBuilder()
+        public GridBuilder<DataGridViewGridProvider> GetBuilder()
         {
             _renderContext.Clear();
-            return new GridBuilder(_renderContext);
+            return new GridBuilder<DataGridViewGridProvider>(_renderContext);
         }
 
         private void AddColumnHeaderRow(int rowIndex)
@@ -249,69 +253,6 @@ namespace VirtualGrid.WinFormsDemo
             }
         }
 
-        private bool GetColumnHeaderCell(GridVector index, out DataGridViewCell cell)
-        {
-            if (index.Column >= _inner.ColumnCount)
-            {
-                Debug.WriteLine("Invalid column {0} >= {1}", index.Column, _inner.ColumnCount);
-                cell = null;
-                return false;
-            }
-
-            cell = _inner.Columns[index.Column.Column].HeaderCell;
-            return true;
-        }
-
-        private bool GetRowHeaderCell(GridVector index, out DataGridViewCell cell)
-        {
-            if (index.Row >= _inner.RowCount)
-            {
-                Debug.WriteLine("Invalid row {0} >= {1}", index.Row, _inner.RowCount);
-                cell = null;
-                return false;
-            }
-
-            cell = _inner.Rows[index.Row.Row].HeaderCell;
-            return true;
-        }
-
-        private bool GetBodyCell(GridVector index, out DataGridViewCell cell)
-        {
-            if (index.Row >= _inner.RowCount)
-            {
-                Debug.WriteLine("Invalid row {0} >= {1}", index.Row, _inner.RowCount);
-                cell = null;
-                return false;
-            }
-
-            if (index.Column >= _inner.ColumnCount)
-            {
-                Debug.WriteLine("Invalid column {0} >= {1}", index.Column, _inner.ColumnCount);
-                cell = null;
-                return false;
-            }
-
-            cell = _inner.Rows[index.Row.Row].Cells[index.Column.Column];
-            return true;
-        }
-
-        private bool GetCell(GridLocation location, out DataGridViewCell cell)
-        {
-            switch (location.Part)
-            {
-                case GridPart.ColumnHeader:
-                    return GetColumnHeaderCell(location.Index, out cell);
-
-                case GridPart.RowHeader:
-                    return GetRowHeaderCell(location.Index, out cell);
-
-                case GridPart.Body:
-                    return GetBodyCell(location.Index, out cell);
-
-                default:
-                    throw new Exception("Unknown GridPart");
-            }
-        }
 
         private void AddAttribute(GridLocation location, string attribute, object value)
         {
@@ -326,7 +267,7 @@ namespace VirtualGrid.WinFormsDemo
         private void ChangeAttribute(GridLocation location, string attribute, object value)
         {
             DataGridViewCell cell;
-            if (!GetCell(location, out cell))
+            if (!_inner.GetCell(location, out cell))
                 return;
 
             switch (attribute)
@@ -494,7 +435,7 @@ namespace VirtualGrid.WinFormsDemo
             _rowHeaderPivots = newPivots;
         }
 
-        private void UpdateBodyLayout(GridBuilder grid)
+        private void UpdateBodyLayout(GridBuilder<DataGridViewGridProvider> grid)
         {
             // FIXME: ボディーのレイアウトを実装
         }
@@ -508,7 +449,7 @@ namespace VirtualGrid.WinFormsDemo
             _oldBindings = newBindings;
         }
 
-        public void Render(GridBuilder grid)
+        public void Render(GridBuilder<DataGridViewGridProvider> grid)
         {
             var columnHeaderLayoutDiff = new List<GridLayoutDelta>();
             var rowHeaderLayoutDiff = new List<GridLayoutDelta>();
@@ -525,6 +466,8 @@ namespace VirtualGrid.WinFormsDemo
             ApplyGridLayoutDiff(GridPart.ColumnHeader, columnHeaderLayoutDiff);
             ApplyGridLayoutDiff(GridPart.RowHeader, rowHeaderLayoutDiff);
             ApplyAttributeDiff(attributeDiff);
+
+            TextAttribute.ApplyDiff();
         }
     }
 }
