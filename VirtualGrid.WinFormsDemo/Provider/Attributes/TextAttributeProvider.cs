@@ -20,11 +20,8 @@ namespace VirtualGrid.WinFormsDemo
             if (!_provider._inner.GetCell(location, out cell))
                 return;
 
-            if ((cell.Value as string ?? "") != (newValue ?? ""))
-            {
-                Debug.WriteLine("Text {0} {1} value={2}", elementKey, location, newValue);
-                cell.Value = newValue ?? "";
-            }
+            Debug.WriteLine("Text {0} {1} value={2}", elementKey, location, newValue);
+            cell.Value = newValue ?? "";
         }
     }
 }

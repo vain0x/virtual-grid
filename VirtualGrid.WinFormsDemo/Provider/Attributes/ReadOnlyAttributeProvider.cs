@@ -23,11 +23,8 @@ namespace VirtualGrid.WinFormsDemo
             if (!_provider._inner.GetCell(location, out cell))
                 return;
 
-            if (cell.ReadOnly != newValue)
-            {
-                Debug.WriteLine("ReadOnly {0} {1} value={2}", elementKey, location, newValue);
-                cell.ReadOnly = newValue;
-            }
+            Debug.WriteLine("ReadOnly {0} {1} value={2}", elementKey, location, newValue);
+            cell.ReadOnly = newValue;
         }
     }
 }
