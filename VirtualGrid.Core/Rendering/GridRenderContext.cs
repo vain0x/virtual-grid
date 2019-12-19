@@ -29,13 +29,11 @@ namespace VirtualGrid.Rendering
         }
 
         public T GetElementAttribute<T>(object elementKey, string attribute, T defaultValue)
-            where T : class
         {
-            var value = Attributes[Tuple.Create(elementKey, attribute)] as T;
-            if (value == null)
-                return defaultValue;
-
-            return value;
+            var value = Attributes[Tuple.Create(elementKey, attribute)];
+            return value != null && value is T
+                ? (T)value
+                : defaultValue;
         }
 
         public GridAttributeBinding[] GetAttributeBindings()

@@ -60,6 +60,11 @@ namespace VirtualGrid.WinFormsDemo.Examples
             EnsureLastBlank();
         }
 
+        public void SetIsDone(TodoItem item, bool isDone)
+        {
+            item.IsDone = isDone;
+        }
+
         public void SetItemText(TodoItem item, string text)
         {
             item.Text = text;
@@ -88,6 +93,8 @@ namespace VirtualGrid.WinFormsDemo.Examples
                 return string.IsNullOrWhiteSpace(Text);
             }
         }
+
+        public bool IsDone { get; set; }
 
         public string Text { get; set; }
     }

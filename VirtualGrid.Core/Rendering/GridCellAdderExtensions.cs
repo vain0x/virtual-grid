@@ -1,4 +1,4 @@
-﻿namespace VirtualGrid.Rendering
+namespace VirtualGrid.Rendering
 {
     public static class GridCellAdderExtensions
     {
@@ -10,6 +10,11 @@
         public static IGridCellBuilder AddEdit(this IGridCellAdder self, string text)
         {
             return self.AddCell().SetText(text);
+        }
+
+        public static IGridCellBuilder AddCheckBox(this IGridCellAdder self, bool isChecked)
+        {
+            return self.AddCell().SetIsChecked(isChecked).SetReadOnly(true);
         }
 
         public static IGridCellBuilder AddButton(this IGridCellAdder self, string text)

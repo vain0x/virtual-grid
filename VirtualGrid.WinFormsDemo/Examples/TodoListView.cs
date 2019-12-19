@@ -53,7 +53,11 @@ namespace VirtualGrid.WinFormsDemo.Examples
                     .AddText("");
 
                 body.At(row, checkColumn)
-                    .AddText("[ ]");
+                    .AddCheckBox(item.IsDone)
+                    .OnCheckChanged(isDone =>
+                    {
+                        _model.SetIsDone(item, isDone);
+                    });
 
                 body.At(row, textColumn)
                     .AddEdit(item.Text)

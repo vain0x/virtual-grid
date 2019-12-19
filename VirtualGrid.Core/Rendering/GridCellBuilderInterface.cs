@@ -45,6 +45,12 @@ namespace VirtualGrid.Rendering
             return this;
         }
 
+        public IGridCellBuilder SetIsChecked(bool isChecked)
+        {
+            SetAttribute("A_IS_CHECKED", isChecked);
+            return this;
+        }
+
         public IGridCellBuilder OnClick(Action action)
         {
             SetAttribute("A_ON_CLICK", action);
@@ -59,6 +65,19 @@ namespace VirtualGrid.Rendering
                 if (text != null || value == null)
                 {
                     action(text);
+                }
+            }));
+            return this;
+        }
+
+        public IGridCellBuilder OnCheckChanged(Action<bool> action)
+        {
+            SetAttribute("A_ON_CHANGED", new Action<object>(value =>
+            {
+                var isChecked = value as bool?;
+                if (isChecked != null)
+                {
+                    action(isChecked.Value);
                 }
             }));
             return this;

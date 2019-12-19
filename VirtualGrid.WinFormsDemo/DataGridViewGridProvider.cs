@@ -345,6 +345,13 @@ namespace VirtualGrid.WinFormsDemo
                     }
                     return;
 
+                case "A_IS_CHECKED":
+                    {
+                        var isChecked = value as bool? == true;
+                        cell.Value = isChecked ? "[x]" : "[ ]";
+                    }
+                    return;
+
                 default:
                     // Debug.WriteLine("Unknown attribute " + attribute);
                     return;
@@ -405,6 +412,19 @@ namespace VirtualGrid.WinFormsDemo
                     if (pair.Value.Part == GridPart.Body && pair.Value.Index == index)
                     {
                         var elementKey = pair.Key;
+
+                        // チェックボックスのチェックを実装する。
+                        // FIXME: セルタイプを見る。
+                        var isChecked = _renderContext.GetElementAttribute(elementKey, "A_IS_CHECKED", new bool?());
+                        if (isChecked != null)
+                        {
+                            var changedAction = _renderContext.GetElementAttribute<Action<object>>(elementKey, "A_ON_CHANGED", null);
+                            if (changedAction != null)
+                            {
+                                _dispatch(elementKey, () => changedAction(!isChecked.Value));
+                            }
+                        }
+
                         var action = _renderContext.GetElementAttribute<Action>(elementKey, "A_ON_CLICK", null);
                         if (action == null)
                             continue;
