@@ -35,15 +35,9 @@ namespace VirtualGrid.Rendering
             }
         }
 
-        public IGridCellAdder<TProvider> WithKey(object elementKey)
+        public GridHeaderCellAdder WithKey(object elementKey)
         {
-            return new AnonymousGridCellAdder<TProvider>(() =>
-            {
-                var cell = new IGridCellBuilder<TProvider>(elementKey, _context);
-                _layouts.Add(cell);
-                _context.AddCell(GridPart, null, null, elementKey);
-                return cell;
-            });
+            return new GridHeaderCellAdder(this, elementKey);
         }
 
         IGridLayoutNode IGridLayoutBuilder.ToGridLayoutNode()
@@ -55,6 +49,28 @@ namespace VirtualGrid.Rendering
             }
 
             return new StackGridLayoutNode(_layouts.Select(layout => layout.ToGridLayoutNode()).ToArray(), _horizontal);
+        }
+
+        public struct GridHeaderCellAdder
+            : IGridCellAdder<TProvider>
+        {
+            private GridHeaderBuilder<TProvider> _parent;
+
+            private readonly object _elementKey;
+
+            public GridHeaderCellAdder(GridHeaderBuilder<TProvider> parent, object elementKey)
+            {
+                _parent = parent;
+                _elementKey = elementKey;
+            }
+
+            public IGridCellBuilder<TProvider> AddCell()
+            {
+                var cell = new IGridCellBuilder<TProvider>(_elementKey, _parent._context);
+                _parent._layouts.Add(cell);
+                _parent._context.AddCell(_parent.GridPart, null, null, _elementKey);
+                return cell;
+            }
         }
     }
 }
