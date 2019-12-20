@@ -59,10 +59,9 @@
     <Compile Include="Layouts\GridLayoutContext.cs" />
     <Compile Include="Layouts\GridLayoutDiffer.cs" />
     <Compile Include="Layouts\GridPivots.cs" />
-    <Compile Include="Layouts\Nodes\HorizontalLinkGridLayoutNode.cs" />
     <Compile Include="Layouts\GridLayoutBuilderInterface.cs" />
-    <Compile Include="Layouts\Nodes\VerticalLinkGridLayoutNode.cs" />
     <Compile Include="Layouts\GridLayoutNodeInterface.cs" />
+    <Compile Include="Layouts\Nodes\StackGridLayoutNode.cs" />
     <Compile Include="Pair.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rendering\GridAttributeData.cs" />

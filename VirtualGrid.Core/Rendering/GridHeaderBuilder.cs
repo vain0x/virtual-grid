@@ -46,21 +46,15 @@ namespace VirtualGrid.Rendering
             });
         }
 
-        private IGridLayoutNode Combine(IGridLayoutNode first, IGridLayoutBuilder second)
-        {
-            if (first == null)
-                return second.ToGridLayoutNode();
-
-            if (_horizontal)
-                return new HorizontalLinkGridLayoutNode(first, second.ToGridLayoutNode());
-
-            return new VerticalLinkGridLayoutNode(first, second.ToGridLayoutNode());
-        }
-
         IGridLayoutNode IGridLayoutBuilder.ToGridLayoutNode()
         {
-            return _layouts.Aggregate(default(IGridLayoutNode), Combine)
-                ?? new EmptyGridLayoutNode(this); // FIXME: elementKey
+            if (_layouts.Count == 0)
+            {
+                var elementKey = _horizontal ? "?_EMPTY_COLUMN_HEADER" : "?_EMPTY_ROW_HEADER";
+                return new EmptyGridLayoutNode(elementKey);
+            }
+
+            return new StackGridLayoutNode(_layouts.Select(layout => layout.ToGridLayoutNode()).ToArray(), _horizontal);
         }
     }
 }
