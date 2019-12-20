@@ -48,6 +48,7 @@ namespace VirtualGrid.WinFormsDemo
         public virtual void ApplyDiff()
         {
             new GridAttributeDataDiffer<T>(_data, this).ApplyDiff();
+            _data.MarkAsClean();
         }
 
         public virtual void MarkAsClean()

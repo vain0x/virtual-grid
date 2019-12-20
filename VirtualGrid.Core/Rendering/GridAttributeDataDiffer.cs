@@ -53,8 +53,6 @@ namespace VirtualGrid.Rendering
             {
                 ApplyDiffOnKey(elementKey);
             }
-
-            _data.MarkAsClean();
         }
     }
 }

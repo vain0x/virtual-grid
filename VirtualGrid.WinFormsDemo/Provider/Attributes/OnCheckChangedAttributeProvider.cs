@@ -12,6 +12,11 @@ namespace VirtualGrid.WinFormsDemo
         {
         }
 
+        public override void ApplyDiff()
+        {
+            MarkAsClean();
+        }
+
         public override void OnChange(object elementKey, GridLocation location, Action<bool> oldValue, Action<bool> newValue)
         {
         }
