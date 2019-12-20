@@ -2,13 +2,14 @@ using System;
 
 namespace VirtualGrid.Rendering
 {
-    public struct GridAttributeDataDiffer<T>
+    public struct GridAttributeDataDiffer<T, TListener>
+        where TListener : IGridAttributeDeltaListener<T>
     {
         private readonly GridAttributeData<T> _data;
 
         private readonly IGridAttributeDeltaListener<T> _listener;
 
-        public GridAttributeDataDiffer(GridAttributeData<T> data, IGridAttributeDeltaListener<T> listener)
+        public GridAttributeDataDiffer(GridAttributeData<T> data, TListener listener)
         {
             _data = data;
             _listener = listener;
@@ -53,6 +54,15 @@ namespace VirtualGrid.Rendering
             {
                 ApplyDiffOnKey(elementKey);
             }
+        }
+    }
+
+    public static class GridAttributeDataDiffer
+    {
+        public static GridAttributeDataDiffer<T, TListener> Create<T, TListener>(GridAttributeData<T> data, TListener listener)
+            where TListener : struct, IGridAttributeDeltaListener<T>
+        {
+            return new GridAttributeDataDiffer<T, TListener>(data, listener);
         }
     }
 }

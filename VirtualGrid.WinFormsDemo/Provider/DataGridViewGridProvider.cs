@@ -15,17 +15,17 @@ namespace VirtualGrid.WinFormsDemo
     {
         internal readonly DataGridView _inner;
 
-        public readonly IsCheckedAttributeProvider IsCheckedAttribute;
+        public readonly GridDataAttributeProvider<bool, IsCheckedAttributePolicy> IsCheckedAttribute;
 
-        public readonly OnCheckChangedAttributeProvider OnCheckChangedAttribute;
+        public readonly GridEventAttributeProvider<Action<bool>> OnCheckChangedAttribute;
 
-        public readonly OnClickAttributeProvider OnClickAttribute;
+        public readonly GridEventAttributeProvider<Action> OnClickAttribute;
 
-        public readonly OnTextChangedAttributeProvider OnTextChangedAttribute;
+        public readonly GridEventAttributeProvider<Action<string>> OnTextChangedAttribute;
 
-        public readonly ReadOnlyAttributeProvider ReadOnlyAttribute;
+        public readonly GridDataAttributeProvider<bool, ReadOnlyAttributePolicy> ReadOnlyAttribute;
 
-        public readonly TextAttributeProvider TextAttribute;
+        public readonly GridDataAttributeProvider<string, TextAttributePolicy> TextAttribute;
 
         private IGridLayoutNode _columnHeaderLayout =
             GridLayoutNode.Empty("?_EMPTY_COLUMN_HEADER");
@@ -56,17 +56,17 @@ namespace VirtualGrid.WinFormsDemo
         {
             _inner = inner;
 
-            IsCheckedAttribute = new IsCheckedAttributeProvider(this);
+            IsCheckedAttribute = GridDataAttributeProvider.Create(default(bool), new IsCheckedAttributePolicy(this), this);
 
-            OnCheckChangedAttribute = new OnCheckChangedAttributeProvider(this);
+            OnCheckChangedAttribute = new GridEventAttributeProvider<Action<bool>>();
 
-            OnClickAttribute = new OnClickAttributeProvider(this);
+            OnClickAttribute = new GridEventAttributeProvider<Action>();
 
-            OnTextChangedAttribute = new OnTextChangedAttributeProvider(this);
+            OnTextChangedAttribute = new GridEventAttributeProvider<Action<string>>();
 
-            ReadOnlyAttribute = new ReadOnlyAttributeProvider(this);
+            ReadOnlyAttribute = GridDataAttributeProvider.Create(default(bool), new ReadOnlyAttributePolicy(this), this);
 
-            TextAttribute = new TextAttributeProvider(this);
+            TextAttribute = GridDataAttributeProvider.Create(default(string), new TextAttributePolicy(this), this);
 
             _renderContext = new GridRenderContext<DataGridViewGridProvider>(this);
 
