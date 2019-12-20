@@ -1,5 +1,3 @@
-using System;
-
 namespace VirtualGrid.Rendering
 {
     public sealed class GridBodyBuilder<TProvider>
@@ -37,7 +35,7 @@ namespace VirtualGrid.Rendering
 
         public IGridCellBuilder<TProvider> AddCell()
         {
-            var elementKey = Tuple.Create(_rowElementKey, _columnElementKey);
+            var elementKey = new GridBodyCellKey(_rowElementKey, _columnElementKey);
             var cell = new IGridCellBuilder<TProvider>(elementKey, _context);
             _context.AddCell(GridPart.Body, _rowElementKey, _columnElementKey, elementKey);
             return cell;
