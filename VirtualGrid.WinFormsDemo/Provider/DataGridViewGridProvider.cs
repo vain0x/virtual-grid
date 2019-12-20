@@ -85,10 +85,10 @@ namespace VirtualGrid.WinFormsDemo
 
             foreach (var t in _renderContext._cells)
             {
-                var part = t.Item1;
-                var rowKey = t.Item2;
-                var columnKey = t.Item3;
-                var elementKey = t.Item4;
+                var part = t.GridPart;
+                var rowKey = t.RowElementKey;
+                var columnKey = t.ColumnElementKey;
+                var elementKey = t.CellElementKey;
 
                 if (part == GridPart.Body)
                 {

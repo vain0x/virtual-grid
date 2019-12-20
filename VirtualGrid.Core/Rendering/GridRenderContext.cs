@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,9 +10,8 @@ namespace VirtualGrid.Rendering
     /// </summary>
     public sealed class GridRenderContext<TProvider>
     {
-        // row key, column key, element key
-        public readonly List<Tuple<GridPart, object, object, object>> _cells =
-            new List<Tuple<GridPart, object, object, object>>();
+        public readonly List<GridCellKey> _cells =
+            new List<GridCellKey>();
 
         public readonly TProvider Provider;
 
@@ -24,7 +22,7 @@ namespace VirtualGrid.Rendering
 
         public void AddCell(GridPart part, object rowKey, object columnKey, object elementKey)
         {
-            _cells.Add(Tuple.Create(part, rowKey, columnKey, elementKey));
+            _cells.Add(new GridCellKey(part, rowKey, columnKey, elementKey));
         }
 
         public void Clear()
