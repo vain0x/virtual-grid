@@ -16,9 +16,12 @@ namespace VirtualGrid
     {
         private readonly T[] _inner;
 
+        private int _hashCode;
+
         public ArrayTuple(T[] inner)
         {
             _inner = inner;
+            _hashCode = 0;
         }
 
         public override bool Equals(object obj)
@@ -33,12 +36,17 @@ namespace VirtualGrid
 
         public override int GetHashCode()
         {
-            var hashCode = -678005361;
-            foreach (var item in _inner)
+            if (_hashCode == 0)
             {
-                hashCode = hashCode * -1521134295 + EqualityComparer<T>.Default.GetHashCode(item);
+                var hashCode = -678005361;
+                foreach (var item in _inner)
+                {
+                    hashCode = hashCode * -1521134295 + EqualityComparer<T>.Default.GetHashCode(item);
+                }
+
+                _hashCode = hashCode;
             }
-            return hashCode;
+            return _hashCode;
         }
 
         public static bool operator ==(ArrayTuple<T> left, ArrayTuple<T> right)
