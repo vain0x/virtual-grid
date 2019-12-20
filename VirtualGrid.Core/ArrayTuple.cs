@@ -31,7 +31,29 @@ namespace VirtualGrid
 
         public bool Equals(ArrayTuple<T> other)
         {
-            return other != null && (_inner == other._inner || _inner.SequenceEqual(other._inner));
+            if (ReferenceEquals(other, null))
+                return false;
+
+            if (_inner == other._inner)
+                return true;
+
+            return ArrayEqualsCore(_inner, other._inner);
+        }
+
+        private bool ArrayEqualsCore(T[] first, T[] second)
+        {
+            if (first.Length != second.Length)
+                return false;
+
+            var comparer = EqualityComparer<T>.Default;
+
+            for (var i = 0; i < first.Length; i++)
+            {
+                if (!comparer.Equals(first[i], second[i]))
+                    return false;
+            }
+
+            return true;
         }
 
         public override int GetHashCode()
