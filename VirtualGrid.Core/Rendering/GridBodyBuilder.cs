@@ -7,11 +7,7 @@ namespace VirtualGrid.Rendering
         public GridBodyBuilder(GridRenderContext<TProvider> context)
         {
             _context = context;
-
-            ElementKey = "?BODY";
         }
-
-        public object ElementKey { get; set; }
 
         public IGridCellAdder<TProvider> At(IGridCellBuilder<TProvider> row, IGridCellBuilder<TProvider> column)
         {
