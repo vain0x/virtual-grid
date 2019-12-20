@@ -17,13 +17,30 @@ namespace VirtualGrid.Rendering
 
         public IGridCellAdder<TProvider> At(IGridCellBuilder<TProvider> row, IGridCellBuilder<TProvider> column)
         {
-            return new AnonymousGridCellAdder<TProvider>(() =>
-            {
-                var elementKey = Tuple.Create(row.ElementKey, column.ElementKey);
-                var cell = new IGridCellBuilder<TProvider>(elementKey, _context);
-                _context.AddCell(GridPart.Body, row.ElementKey, column.ElementKey, elementKey);
-                return cell;
-            });
+            return new GridBodyCellAdder<TProvider>(row.ElementKey, column.ElementKey, _context);
+        }
+    }
+
+    public struct GridBodyCellAdder<TProvider>
+        : IGridCellAdder<TProvider>
+    {
+        private readonly object _rowElementKey;
+        private readonly object _columnElementKey;
+        private readonly GridRenderContext<TProvider> _context;
+
+        public GridBodyCellAdder(object rowElementKey, object columnElementKey, GridRenderContext<TProvider> context)
+        {
+            _rowElementKey = rowElementKey;
+            _columnElementKey = columnElementKey;
+            _context = context;
+        }
+
+        public IGridCellBuilder<TProvider> AddCell()
+        {
+            var elementKey = Tuple.Create(_rowElementKey, _columnElementKey);
+            var cell = new IGridCellBuilder<TProvider>(elementKey, _context);
+            _context.AddCell(GridPart.Body, _rowElementKey, _columnElementKey, elementKey);
+            return cell;
         }
     }
 }
