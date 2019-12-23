@@ -13,6 +13,8 @@ namespace VirtualGrid.WinFormsDemo.Examples
     {
         private readonly TodoListModel _model;
 
+        private bool _first = true;
+
         private readonly BucketGridBuilder<DataGridViewGridProvider> _h;
 
         public TodoListView(TodoListModel model, BucketGridBuilder<DataGridViewGridProvider> h)
@@ -46,39 +48,47 @@ namespace VirtualGrid.WinFormsDemo.Examples
             var rh = _h.RowHeader;
             var body = _h.Body;
 
-            foreach (var item in _model.Items)
+            for (var i = 0; i < 2; i++)
             {
-                var row = rh
-                    .WithKey(item)
-                    .AddText("");
+                var localI = i;
 
-                body.At(row, checkColumn)
-                    .AddCheckBox(item.IsDone)
-                    .OnCheckChanged(isDone =>
+                rh.AddBucket(i, _first || i == 0, bucket =>
+                {
+                    foreach (var item in _model.Items)
                     {
-                        _model.SetIsDone(item, isDone);
-                    });
+                        var row = bucket
+                            .WithKey(Tuple.Create(localI, item))
+                            .AddText("");
 
-                body.At(row, textColumn)
-                    .AddEdit(item.Text)
-                    .OnTextChanged(text =>
-                    {
-                        _model.SetItemText(item, text);
-                    });
+                        body.At(row, checkColumn)
+                            .AddCheckBox(item.IsDone)
+                            .OnCheckChanged(isDone =>
+                            {
+                                _model.SetIsDone(item, isDone);
+                            });
 
-                body.At(row, addButtonColumn)
-                    .AddText("[上に追加]")
-                    .OnClick(() =>
-                    {
-                        _model.InsertBefore(item);
-                    });
+                        body.At(row, textColumn)
+                            .AddEdit(item.Text)
+                            .OnTextChanged(text =>
+                            {
+                                _model.SetItemText(item, text);
+                            });
 
-                body.At(row, deleteButtonColumn)
-                    .AddText("[削除]")
-                    .OnClick(() =>
-                    {
-                        _model.Remove(item);
-                    });
+                        body.At(row, addButtonColumn)
+                            .AddText("[上に追加]")
+                            .OnClick(() =>
+                            {
+                                _model.InsertBefore(item);
+                            });
+
+                        body.At(row, deleteButtonColumn)
+                            .AddText("[削除]")
+                            .OnClick(() =>
+                            {
+                                _model.Remove(item);
+                            });
+                    }
+                });
             }
 
             // 新規追加
@@ -97,6 +107,8 @@ namespace VirtualGrid.WinFormsDemo.Examples
                 body.At(row, deleteButtonColumn)
                     .AddText(string.Format("{0}件", _model.NonBlankCount()));
             }
+
+            _first = false;
         }
     }
 }

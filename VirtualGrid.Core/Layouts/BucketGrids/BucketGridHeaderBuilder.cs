@@ -26,6 +26,9 @@ namespace VirtualGrid.Layouts.BucketGrids
         private Dictionary<object, int> _keyMap =
             new Dictionary<object, int>();
 
+        private List<bool> _dirtyFlags =
+            new List<bool>();
+
         private List<Action<BucketGridHeaderBuilder<TProvider>>> _renderFuncOpts =
             new List<Action<BucketGridHeaderBuilder<TProvider>>>();
         
@@ -37,7 +40,7 @@ namespace VirtualGrid.Layouts.BucketGrids
             _isRowHeader = isRowHeader;
         }
 
-        private void AddCore(object elementKey, Action<BucketGridHeaderBuilder<TProvider>> renderFuncOpt)
+        private void AddCore(object elementKey, bool isDirty, Action<BucketGridHeaderBuilder<TProvider>> renderFuncOpt)
         {
             if (elementKey == null)
                 throw new ArgumentNullException("elementKey");
@@ -48,6 +51,7 @@ namespace VirtualGrid.Layouts.BucketGrids
             var index = _elementKeys.Count;
             _keyMap.Add(elementKey, index);
             _elementKeys.Add(elementKey);
+            _dirtyFlags.Add(isDirty);
             _renderFuncOpts.Add(renderFuncOpt);
         }
 
@@ -62,19 +66,19 @@ namespace VirtualGrid.Layouts.BucketGrids
         {
             return new AnonymousGridCellAdder<TProvider>(() =>
             {
-                AddCore(elementKey, null);
+                AddCore(elementKey, true, null);
 
                 var cell = new IGridCellBuilder<TProvider>(CreateElementKey(elementKey), _context);
                 return cell;
             });
         }
 
-        public void AddBucket(object elementKey, Action<BucketGridHeaderBuilder<TProvider>> renderFunc)
+        public void AddBucket(object elementKey, bool isDirty, Action<BucketGridHeaderBuilder<TProvider>> renderFunc)
         {
             if (renderFunc == null)
                 throw new ArgumentNullException("renderFunc");
 
-            AddCore(elementKey, renderFunc);
+            AddCore(elementKey, isDirty, renderFunc);
         }
 
         public void Patch()
@@ -103,8 +107,7 @@ namespace VirtualGrid.Layouts.BucketGrids
             renderFuncOpt(newBuilder);
 
             // FIXME: newBuilder の内部にある _renderFuncOpts を使う。
-            // FIXME: IsDirty=false も可能にする。
-            return new GridHeaderDecomposition(newBuilder._elementKeys, isDirty: true);
+            return new GridHeaderDecomposition(newBuilder._elementKeys, isDirty: _dirtyFlags[index]);
         }
     }
 }
