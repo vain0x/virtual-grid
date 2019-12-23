@@ -28,7 +28,6 @@ namespace VirtualGrid.WinFormsDemo
 
         public static IGridCellBuilder<P> AddButton(this IGridCellAdder<P> self, string text)
         {
-            // FIXME: 実装
             return self.AddText(text);
         }
     }

@@ -10,9 +10,6 @@ namespace VirtualGrid.Rendering
     /// </summary>
     public sealed class GridRenderContext<TProvider>
     {
-        public readonly List<GridCellKey> _cells =
-            new List<GridCellKey>();
-
         public readonly TProvider Provider;
 
         public GridRenderContext(TProvider provider)
@@ -22,12 +19,10 @@ namespace VirtualGrid.Rendering
 
         public void AddCell(GridPart part, object rowKey, object columnKey, object elementKey)
         {
-            _cells.Add(new GridCellKey(part, rowKey, columnKey, elementKey));
         }
 
         public void Clear()
         {
-            _cells.Clear();
         }
     }
 }

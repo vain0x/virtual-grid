@@ -7,7 +7,7 @@ namespace VirtualGrid.Rendering
     public sealed class IGridCellBuilder<TProvider>
         : IGridLayoutBuilder
     {
-        public object ElementKey;
+        public GridElementKey ElementKey;
 
         internal GridRenderContext<TProvider> Context;
 
@@ -19,7 +19,7 @@ namespace VirtualGrid.Rendering
             }
         }
 
-        public IGridCellBuilder(object elementKey, GridRenderContext<TProvider> context)
+        public IGridCellBuilder(GridElementKey elementKey, GridRenderContext<TProvider> context)
         {
             ElementKey = elementKey;
             Context = context;

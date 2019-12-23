@@ -15,7 +15,7 @@ namespace VirtualGrid.Rendering
             _listener = listener;
         }
 
-        private void ApplyDiffOnKey(object elementKey)
+        private void ApplyDiffOnKey(GridElementKey elementKey)
         {
             GridAttributeDeltaKind kind;
             T oldValue;

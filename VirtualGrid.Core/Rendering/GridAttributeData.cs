@@ -19,19 +19,18 @@ namespace VirtualGrid.Rendering
     /// </typeparam>
     public sealed class GridAttributeData<T>
     {
-        // FIXME: Dictionary は遅い？
-        private Dictionary<object, T> _old =
-            new Dictionary<object, T>();
+        private Dictionary<GridElementKey, T> _old =
+            new Dictionary<GridElementKey, T>();
 
-        private Dictionary<object, T> _new =
-            new Dictionary<object, T>();
+        private Dictionary<GridElementKey, T> _new =
+            new Dictionary<GridElementKey, T>();
 
-        private readonly HashSet<object> _newKeys =
-            new HashSet<object>();
+        private readonly HashSet<GridElementKey> _newKeys =
+            new HashSet<GridElementKey>();
 
         public readonly T DefaultValue;
 
-        public IEnumerable<object> OldKeys
+        public IEnumerable<GridElementKey> OldKeys
         {
             get
             {
@@ -39,7 +38,7 @@ namespace VirtualGrid.Rendering
             }
         }
 
-        public IEnumerable<object> NewKeys
+        public IEnumerable<GridElementKey> NewKeys
         {
             get
             {
@@ -52,7 +51,7 @@ namespace VirtualGrid.Rendering
             DefaultValue = defaultValue;
         }
 
-        public void SetValue(object elementKey, T value)
+        public void SetValue(GridElementKey elementKey, T value)
         {
             _new[elementKey] = value;
 
@@ -62,24 +61,24 @@ namespace VirtualGrid.Rendering
             }
         }
 
-        public bool IsAttached(object elementKey)
+        public bool IsAttached(GridElementKey elementKey)
         {
             return _old.ContainsKey(elementKey) || _newKeys.Contains(elementKey);
         }
 
-        public T GetOldValue(object elementKey)
+        public T GetOldValue(GridElementKey elementKey)
         {
             T value;
             return _old.TryGetValue(elementKey, out value) ? value : DefaultValue;
         }
 
-        public T GetNewValue(object elementKey)
+        public T GetNewValue(GridElementKey elementKey)
         {
             T value;
             return _new.TryGetValue(elementKey, out value) ? value : DefaultValue;
         }
 
-        public bool TryGetDelta(object elementKey, out GridAttributeDeltaKind kind, out T oldValue, out T newValue)
+        public bool TryGetDelta(GridElementKey elementKey, out GridAttributeDeltaKind kind, out T oldValue, out T newValue)
         {
             if (_old.TryGetValue(elementKey, out oldValue))
             {

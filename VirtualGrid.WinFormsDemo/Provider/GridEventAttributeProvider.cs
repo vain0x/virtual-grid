@@ -16,12 +16,12 @@ namespace VirtualGrid.WinFormsDemo
             _data = new GridAttributeData<T>(default(T));
         }
 
-        public T GetValue(object elementKey)
+        public T GetValue(GridElementKey elementKey)
         {
             return _data.GetOldValue(elementKey);
         }
 
-        public void SetValue(object elementKey, T value)
+        public void SetValue(GridElementKey elementKey, T value)
         {
             _data.SetValue(elementKey, value);
         }

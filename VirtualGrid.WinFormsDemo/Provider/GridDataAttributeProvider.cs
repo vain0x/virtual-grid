@@ -22,17 +22,17 @@ namespace VirtualGrid.WinFormsDemo
             _provider = provider;
         }
 
-        public bool IsAttached(object elementKey)
+        public bool IsAttached(GridElementKey elementKey)
         {
             return _data.IsAttached(elementKey);
         }
 
-        public T GetValue(object elementKey)
+        public T GetValue(GridElementKey elementKey)
         {
             return _data.GetOldValue(elementKey);
         }
 
-        public void SetValue(object elementKey, T value)
+        public void SetValue(GridElementKey elementKey, T value)
         {
             _data.SetValue(elementKey, value);
         }
@@ -48,16 +48,6 @@ namespace VirtualGrid.WinFormsDemo
             _data.MarkAsClean();
         }
 
-        private bool TryGetLocation(object elementKey, out GridLocation location)
-        {
-            if (!_provider._locationMap.TryGetValue(elementKey, out location))
-            {
-                Debug.WriteLine("Cell location unknown ({0})", elementKey);
-                return false;
-            }
-            return true;
-        }
-
         public struct DeltaListener
             : IGridAttributeDeltaListener<T>
         {
@@ -68,25 +58,25 @@ namespace VirtualGrid.WinFormsDemo
                 _parent = parent;
             }
 
-            public void OnAdd(object elementKey, T newValue)
+            public void OnAdd(GridElementKey elementKey, T newValue)
             {
                 GridLocation location;
-                if (_parent.TryGetLocation(elementKey, out location))
+                if (_parent._provider.TryGetLocation(elementKey, out location))
                 {
                     _parent._policy.OnChange(elementKey, location, _parent._data.DefaultValue, newValue);
                 }
             }
 
-            public void OnChange(object elementKey, T oldValue, T newValue)
+            public void OnChange(GridElementKey elementKey, T oldValue, T newValue)
             {
                 GridLocation location;
-                if (_parent.TryGetLocation(elementKey, out location))
+                if (_parent._provider.TryGetLocation(elementKey, out location))
                 {
                     _parent._policy.OnChange(elementKey, location, oldValue, newValue);
                 }
             }
 
-            public void OnRemove(object elementKey, T oldValue)
+            public void OnRemove(GridElementKey elementKey, T oldValue)
             {
             }
         }

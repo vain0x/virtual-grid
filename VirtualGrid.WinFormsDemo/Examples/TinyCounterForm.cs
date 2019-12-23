@@ -19,7 +19,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
             Dock = DockStyle.Fill
         };
 
-        private readonly DataGridViewGridProvider _gridProvider;
+        //private readonly DataGridViewGridProvider _gridProvider;
 
         private readonly TinyCounterModel _model = new TinyCounterModel();
 
@@ -30,7 +30,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
             _dataGridView.AllowUserToAddRows = false;
             Controls.Add(_dataGridView);
 
-            _gridProvider = new DataGridViewGridProvider(_dataGridView, Dispatch);
+            //_gridProvider = new DataGridViewGridProvider(_dataGridView, Dispatch);
         }
 
         private void Dispatch(object elementKey, Action action)
@@ -41,9 +41,9 @@ namespace VirtualGrid.WinFormsDemo.Examples
 
         private void Render()
         {
-            var h = _gridProvider.GetBuilder();
-            new TinyCounterView(_model, h).Render();
-            _gridProvider.Render(h);
+            //var h = _gridProvider.GetBuilder();
+            //new TinyCounterView(_model, h).Render();
+            //_gridProvider.Render(h);
         }
 
         protected override void OnLoad(EventArgs e)

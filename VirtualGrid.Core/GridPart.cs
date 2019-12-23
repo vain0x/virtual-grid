@@ -12,14 +12,14 @@ namespace VirtualGrid
     public enum GridPart
     {
         /// <summary>
-        /// カラムヘッダー (上にあるヘッダー)
-        /// </summary>
-        ColumnHeader,
-
-        /// <summary>
         /// ローヘッダー (左にあるヘッダー)
         /// </summary>
         RowHeader,
+
+        /// <summary>
+        /// カラムヘッダー (上にあるヘッダー)
+        /// </summary>
+        ColumnHeader,
 
         /// <summary>
         /// ボディー

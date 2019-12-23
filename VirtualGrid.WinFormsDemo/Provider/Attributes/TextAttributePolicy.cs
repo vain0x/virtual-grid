@@ -21,7 +21,7 @@ namespace VirtualGrid.WinFormsDemo
             }
         }
 
-        public void OnChange(object elementKey, GridLocation location, string oldValue, string newValue)
+        public void OnChange(GridElementKey elementKey, GridLocation location, string oldValue, string newValue)
         {
             DataGridViewCell cell;
             if (!_provider._inner.GetCell(location, out cell))

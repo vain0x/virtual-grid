@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using VirtualGrid.Layouts;
+using VirtualGrid.Layouts.BucketGrids;
 using VirtualGrid.Rendering;
 
 namespace VirtualGrid.WinFormsDemo.Examples
@@ -13,9 +13,9 @@ namespace VirtualGrid.WinFormsDemo.Examples
     {
         private readonly TodoListModel _model;
 
-        private readonly GridBuilder<DataGridViewGridProvider> _h;
+        private readonly BucketGridBuilder<DataGridViewGridProvider> _h;
 
-        public TodoListView(TodoListModel model, GridBuilder<DataGridViewGridProvider> h)
+        public TodoListView(TodoListModel model, BucketGridBuilder<DataGridViewGridProvider> h)
         {
             _model = model;
             _h = h;

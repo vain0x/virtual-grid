@@ -6,4 +6,20 @@ namespace VirtualGrid.Rendering
     {
         IGridCellBuilder<TProvider> AddCell();
     }
+
+    internal sealed class AnonymousGridCellAdder<TProvider>
+        : IGridCellAdder<TProvider>
+    {
+        Func<IGridCellBuilder<TProvider>> _addCell;
+
+        public AnonymousGridCellAdder(Func<IGridCellBuilder<TProvider>> addCell)
+        {
+            _addCell = addCell;
+        }
+
+        public IGridCellBuilder<TProvider> AddCell()
+        {
+            return _addCell();
+        }
+    }
 }

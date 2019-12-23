@@ -31,7 +31,7 @@ namespace VirtualGrid.Rendering
 
         public IGridCellBuilder<TProvider> AddCell()
         {
-            var elementKey = new GridBodyCellKey(_rowElementKey, _columnElementKey);
+            var elementKey = GridElementKey.NewBody(_rowElementKey, _columnElementKey);
             var cell = new IGridCellBuilder<TProvider>(elementKey, _context);
             _context.AddCell(GridPart.Body, _rowElementKey, _columnElementKey, elementKey);
             return cell;

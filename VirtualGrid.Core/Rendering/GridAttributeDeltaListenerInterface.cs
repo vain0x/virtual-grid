@@ -2,10 +2,10 @@ namespace VirtualGrid.Rendering
 {
     public interface IGridAttributeDeltaListener<T>
     {
-        void OnAdd(object elementKey, T newValue);
+        void OnAdd(GridElementKey elementKey, T newValue);
 
-        void OnChange(object elementKey, T oldValue, T newValue);
+        void OnChange(GridElementKey elementKey, T oldValue, T newValue);
 
-        void OnRemove(object elementKey, T oldValue);
+        void OnRemove(GridElementKey elementKey, T oldValue);
     }
 }

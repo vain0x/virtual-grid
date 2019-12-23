@@ -21,7 +21,7 @@ namespace VirtualGrid.WinFormsDemo
             }
         }
 
-        public void OnChange(object elementKey, GridLocation location, bool oldValue, bool newValue)
+        public void OnChange(GridElementKey elementKey, GridLocation location, bool oldValue, bool newValue)
         {
             if (location.Part != GridPart.Body)
                 return;

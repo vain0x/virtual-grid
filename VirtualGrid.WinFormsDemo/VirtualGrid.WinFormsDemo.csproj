@@ -80,6 +80,8 @@
     <Compile Include="Provider\Attributes\TextAttributePolicy.cs" />
     <Compile Include="Provider\GridDataAttributePolicyInterface.cs" />
     <Compile Include="Provider\GridEventAttributeProvider.cs" />
+    <Compile Include="Provider\Headers\ColumnHeaderDeltaListener.cs" />
+    <Compile Include="Provider\Headers\RowHeaderDeltaListener.cs" />
     <EmbeddedResource Include="MainMenuForm.resx">
       <DependentUpon>MainMenuForm.cs</DependentUpon>
     </EmbeddedResource>

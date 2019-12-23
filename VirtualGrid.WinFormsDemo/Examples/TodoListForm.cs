@@ -8,7 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using VirtualGrid.Layouts.BucketGrids;
 using VirtualGrid.Rendering;
+using VirtualGrid.WinFormsDemo.Provider.Headers;
 
 namespace VirtualGrid.WinFormsDemo.Examples
 {
@@ -18,6 +20,9 @@ namespace VirtualGrid.WinFormsDemo.Examples
         {
             Dock = DockStyle.Fill
         };
+
+        private readonly BucketGridLayout _gridLayout =
+            new BucketGridLayout();
 
         private readonly DataGridViewGridProvider _gridProvider;
 
@@ -30,10 +35,10 @@ namespace VirtualGrid.WinFormsDemo.Examples
             _dataGridView.AllowUserToAddRows = false;
             Controls.Add(_dataGridView);
 
-            _gridProvider = new DataGridViewGridProvider(_dataGridView, Dispatch);
+            _gridProvider = new DataGridViewGridProvider(_dataGridView, _gridLayout, Dispatch);
         }
 
-        private void Dispatch(object _elementKey, Action action)
+        private void Dispatch(GridElementKey _elementKey, Action action)
         {
             action();
             BeginInvoke(new Action(Render));
@@ -41,9 +46,17 @@ namespace VirtualGrid.WinFormsDemo.Examples
 
         private void Render()
         {
-            var h = _gridProvider.GetBuilder();
+            _gridProvider._renderContext.Clear();
+            var h = new BucketGridBuilder<DataGridViewGridProvider>(
+                _gridLayout,
+                _gridProvider._renderContext,
+                new RowHeaderDeltaListener(_gridProvider),
+                new ColumnHeaderDeltaListener(_gridProvider)
+            );
+
             new TodoListView(_model, h).Render();
-            _gridProvider.Render(h);
+            h.Patch();
+            _gridProvider.Render();
         }
 
         protected override void OnLoad(EventArgs e)
