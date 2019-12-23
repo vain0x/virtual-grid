@@ -175,6 +175,7 @@ namespace VirtualGrid.Headers
                             childNode.BeginPatch();
                             childNode.SetNewSpan(1);
                             childNode.EndPatch();
+                            _listener.OnInsert(_newKeys[ti], gi);
                         }
                         else
                         {
@@ -190,7 +191,6 @@ namespace VirtualGrid.Headers
                         _node.AddNewNode(_newKeys[ti], childNode);
                     }
 
-                    _listener.OnInsert(_newKeys[ti], gi);
                     ti++;
                     gi += childNode.Span;
                 }
@@ -198,7 +198,10 @@ namespace VirtualGrid.Headers
                 if (doRemove)
                 {
                     Debug.Assert(si < _oldKeys.Count);
-                    _listener.OnRemove(_oldKeys[si], gi);
+                    if (_node.Children[si].IsLeaf)
+                    {
+                        _listener.OnRemove(_oldKeys[si], gi);
+                    }
                     si++;
                 }
             }

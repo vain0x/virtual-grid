@@ -76,6 +76,14 @@ namespace VirtualGrid.Headers
             }
         }
 
+        public bool IsLeaf
+        {
+            get
+            {
+                return Count == 0 && Span >= 1;
+            }
+        }
+
         public bool TryGetNode(object elementKey, out GridHeaderNode child)
         {
             int index;
@@ -91,7 +99,7 @@ namespace VirtualGrid.Headers
 
         public IEnumerable<object> Hit(object elementKey, int index)
         {
-            if (Children.Count == 0 && 0 <= index && index < Span)
+            if (IsLeaf && 0 <= index && index < Span)
             {
                 if (elementKey != null)
                     yield return elementKey;
