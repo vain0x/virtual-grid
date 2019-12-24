@@ -99,7 +99,10 @@ namespace VirtualGrid.Headers
 
         public IEnumerable<object> Hit(object elementKey, int index)
         {
-            if (IsLeaf && 0 <= index && index < Span)
+            if (index < 0)
+                yield break;
+
+            if (IsLeaf && index < Span)
             {
                 if (elementKey != null)
                     yield return elementKey;
@@ -114,8 +117,6 @@ namespace VirtualGrid.Headers
                     }
 
                     index -= Children[i].Span;
-                    if (index < 0)
-                        yield break;
                 }
             }
         }
