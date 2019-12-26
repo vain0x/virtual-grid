@@ -46,8 +46,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Provider\AttributeBuilder.cs" />
     <Compile Include="Provider\Attributes\IsCheckedAttributePolicy.cs" />
     <Compile Include="Provider\Attributes\ReadOnlyAttributePolicy.cs" />
+    <Compile Include="Provider\DataGridViewColumnElementKeyInterner.cs" />
     <Compile Include="Provider\DataGridViewExtensions.cs" />
     <Compile Include="Provider\DataGridViewGridProvider.cs" />
     <Compile Include="Examples\TinyCounterForm.cs">
@@ -66,9 +68,9 @@
     </Compile>
     <Compile Include="Examples\TodoListModel.cs" />
     <Compile Include="Examples\TodoListView.cs" />
-    <Compile Include="Provider\GridDataAttributeProvider.cs" />
-    <Compile Include="Provider\GridCellAdderExtensions.cs" />
-    <Compile Include="Provider\GridCellBuilderExtensions.cs" />
+    <Compile Include="Provider\DataAttributeProvider.cs" />
+    <Compile Include="Provider\CellAdderExtensions.cs" />
+    <Compile Include="Provider\CellBuilderExtensions.cs" />
     <Compile Include="MainMenuForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -78,10 +80,14 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Provider\Attributes\TextAttributePolicy.cs" />
-    <Compile Include="Provider\GridDataAttributePolicyInterface.cs" />
-    <Compile Include="Provider\GridEventAttributeProvider.cs" />
-    <Compile Include="Provider\Headers\ColumnHeaderDeltaListener.cs" />
-    <Compile Include="Provider\Headers\RowHeaderDeltaListener.cs" />
+    <Compile Include="Provider\DataAttributePolicyInterface.cs" />
+    <Compile Include="Provider\DataGridViewRowElementKeyInterner.cs" />
+    <Compile Include="Provider\EventAttributeProvider.cs" />
+    <Compile Include="Provider\Headers\ColumnHeaderColumnHeaderDeltaListener.cs" />
+    <Compile Include="Provider\Headers\ColumnHeaderRowHeaderDeltaListener.cs" />
+    <Compile Include="Provider\Headers\RowHeaderColumnHeaderDeltaListener.cs" />
+    <Compile Include="Provider\Headers\RowHeaderRowHeaderDeltaListener.cs" />
+    <Compile Include="Provider\DataGridViewRowHeaderGrid.cs" />
     <EmbeddedResource Include="MainMenuForm.resx">
       <DependentUpon>MainMenuForm.cs</DependentUpon>
     </EmbeddedResource>

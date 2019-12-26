@@ -1,12 +1,13 @@
 using System.Diagnostics;
 using System.Windows.Forms;
+using VirtualGrid.Spreads;
 
 namespace VirtualGrid.WinFormsDemo
 {
     public struct TextAttributePolicy
-        : IGridDataAttributePolicy<string>
+        : IDataAttributePolicy<string>
     {
-        private readonly DataGridViewGridProvider _provider;
+        private DataGridViewGridProvider _provider;
 
         public TextAttributePolicy(DataGridViewGridProvider provider)
         {
@@ -21,7 +22,7 @@ namespace VirtualGrid.WinFormsDemo
             }
         }
 
-        public void OnChange(GridElementKey elementKey, GridLocation location, string oldValue, string newValue)
+        public void OnChange(SpreadElementKey elementKey, SpreadLocation location, string oldValue, string newValue)
         {
             DataGridViewCell cell;
             if (!_provider._inner.GetCell(location, out cell))

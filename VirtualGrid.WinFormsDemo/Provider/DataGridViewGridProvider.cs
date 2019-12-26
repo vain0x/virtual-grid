@@ -7,31 +7,17 @@ using System.Windows.Forms;
 using VirtualGrid.Abstraction;
 using VirtualGrid.Layouts;
 using VirtualGrid.Rendering;
+using VirtualGrid.Spreads;
 
 namespace VirtualGrid.WinFormsDemo
 {
+
     public sealed class DataGridViewGridProvider
         : IGridProvider
     {
         internal readonly DataGridView _inner;
 
-        private readonly IGridLayout _layout;
-
-        private readonly Action<GridElementKey, Action> _dispatch;
-
-        public readonly GridRenderContext<DataGridViewGridProvider> _renderContext;
-
-        public readonly GridDataAttributeProvider<bool, IsCheckedAttributePolicy> IsCheckedAttribute;
-
-        public readonly GridEventAttributeProvider<Action<bool>> OnCheckChangedAttribute;
-
-        public readonly GridEventAttributeProvider<Action> OnClickAttribute;
-
-        public readonly GridEventAttributeProvider<Action<string>> OnTextChangedAttribute;
-
-        public readonly GridDataAttributeProvider<bool, ReadOnlyAttributePolicy> ReadOnlyAttribute;
-
-        public readonly GridDataAttributeProvider<string, TextAttributePolicy> TextAttribute;
+        internal readonly Action<GridElementKey, Action> _dispatch;
 
         internal readonly Dictionary<object, DataGridViewRow> _rowMap =
             new Dictionary<object, DataGridViewRow>();
@@ -39,173 +25,72 @@ namespace VirtualGrid.WinFormsDemo
         internal readonly Dictionary<object, DataGridViewColumn> _columnMap =
             new Dictionary<object, DataGridViewColumn>();
 
-        public DataGridViewGridProvider(DataGridView inner, IGridLayout layout, Action<GridElementKey, Action> dispatch)
+        public DataGridViewGridProvider(DataGridView inner, Action<GridElementKey, Action> dispatch)
         {
             _inner = inner;
-
-            _layout = layout;
-
-            IsCheckedAttribute = GridDataAttributeProvider.Create(default(bool), new IsCheckedAttributePolicy(this), this);
-
-            OnCheckChangedAttribute = new GridEventAttributeProvider<Action<bool>>();
-
-            OnClickAttribute = new GridEventAttributeProvider<Action>();
-
-            OnTextChangedAttribute = new GridEventAttributeProvider<Action<string>>();
-
-            ReadOnlyAttribute = GridDataAttributeProvider.Create(default(bool), new ReadOnlyAttributePolicy(this), this);
-
-            TextAttribute = GridDataAttributeProvider.Create(default(string), new TextAttributePolicy(this), this);
-
-            _renderContext = new GridRenderContext<DataGridViewGridProvider>(this);
 
             _dispatch = (elementKey, action) =>
             {
                 Debug.WriteLine("Dispatch({0}, {1})", elementKey, action);
                 dispatch(elementKey, action);
             };
-
-            SubscribeEvents();
         }
 
-        public bool TryGetLocation(GridElementKey elementKey, out GridLocation location)
+        public bool TryGetLocation(SpreadElementKey elementKey, out SpreadLocation location)
         {
             var rowIndexOpt = default(RowIndex?);
             var columnIndexOpt = default(ColumnIndex?);
 
-            if (elementKey.RowElementKeyOpt != null)
+            DataGridViewRow row;
+            if (_rowMap.TryGetValue(elementKey.ElementKey.RowElementKey, out row))
             {
-                DataGridViewRow row;
-                if (_rowMap.TryGetValue(elementKey.RowElementKeyOpt, out row))
-                {
-                    rowIndexOpt = RowIndex.From(row.Index);
-                }
+                rowIndexOpt = RowIndex.From(row.Index);
             }
 
-            if (elementKey.ColumnElementKeyOpt != null)
+            DataGridViewColumn column;
+            if (_columnMap.TryGetValue(elementKey.ElementKey.ColumnElementKey, out column))
             {
-                DataGridViewColumn column;
-                if (_columnMap.TryGetValue(elementKey.ColumnElementKeyOpt, out column))
-                {
-                    columnIndexOpt = ColumnIndex.From(column.Index);
-                }
+                columnIndexOpt = ColumnIndex.From(column.Index);
             }
 
-            switch (elementKey.GridPart)
+            switch (elementKey.Part)
             {
-                case GridPart.RowHeader:
-                    if (rowIndexOpt.HasValue)
+                case SpreadPart.RowHeader:
                     {
-                        location = GridLocation.NewRowHeader(rowIndexOpt.Value.AsVector);
-                        return true;
+                        if (rowIndexOpt.HasValue)
+                        {
+                            location = SpreadLocation.NewRowHeader(rowIndexOpt.Value.AsVector);
+                            return true;
+                        }
+                        break;
                     }
-                    break;
 
-                case GridPart.ColumnHeader:
-                    if (columnIndexOpt.HasValue)
+                case SpreadPart.ColumnHeader:
                     {
-                        location = GridLocation.NewColumnHeader(columnIndexOpt.Value.AsVector);
-                        return true;
+                        if (columnIndexOpt.HasValue)
+                        {
+                            location = SpreadLocation.NewColumnHeader(columnIndexOpt.Value.AsVector);
+                            return true;
+                        }
+                        break;
                     }
-                    break;
 
-                case GridPart.Body:
-                    if (rowIndexOpt.HasValue && columnIndexOpt.HasValue)
+                case SpreadPart.Body:
                     {
-                        location = GridLocation.NewBody(GridVector.Create(rowIndexOpt.Value, columnIndexOpt.Value));
-                        return true;
+                        if (rowIndexOpt.HasValue && columnIndexOpt.HasValue)
+                        {
+                            location = SpreadLocation.NewBody(GridVector.Create(rowIndexOpt.Value, columnIndexOpt.Value));
+                            return true;
+                        }
+                        break;
                     }
-                    break;
 
                 default:
-                    throw new Exception("Unknown GridPart");
+                    throw new Exception("Unknown SpreadPart");
             }
 
-            location = default(GridLocation);
+            location = default(SpreadLocation);
             return false;
-        }
-
-        private void OnCellClick(object _sender, DataGridViewCellEventArgs ev)
-        {
-            // ヘッダーのイベントは未実装
-            if (ev.RowIndex < 0 || ev.ColumnIndex < 0)
-                return;
-
-            var row = RowIndex.From(ev.RowIndex);
-            var column = ColumnIndex.From(ev.ColumnIndex);
-            var index = GridVector.Create(row, column);
-
-            foreach (var elementKey in _layout.Body.Hit(index))
-            {
-                Debug.WriteLine("Click({0})", elementKey);
-
-                // チェックボックスのチェックを実装する。
-                // FIXME: セルタイプを見る。
-                if (IsCheckedAttribute.IsAttached(elementKey))
-                {
-                    var isChecked = IsCheckedAttribute.GetValue(elementKey);
-                    var action = OnCheckChangedAttribute.GetValue(elementKey);
-                    if (action != null)
-                    {
-                        _dispatch(elementKey, () => action(!isChecked));
-                    }
-                }
-
-                {
-                    var action = OnClickAttribute.GetValue(elementKey);
-                    if (action != null)
-                    {
-                        _dispatch(elementKey, action);
-                    }
-                }
-            }
-        }
-
-        private void SubscribeEvents()
-        {
-            _inner.CellClick += OnCellClick;
-
-            //_inner.CellValueChanged += (sender, ev) =>
-            //{
-            //    if (ev.RowIndex < 0 || ev.ColumnIndex < 0)
-            //        return;
-
-            //    var value = _inner.Rows[ev.RowIndex].Cells[ev.ColumnIndex].Value;
-
-            //    var row = RowIndex.From(ev.RowIndex);
-            //    var column = ColumnIndex.From(ev.ColumnIndex);
-            //    var index = GridVector.Create(row, column);
-
-            //    foreach (var pair in _locationMap)
-            //    {
-            //        if (pair.Value.Part == GridPart.Body && pair.Value.Index == index)
-            //        {
-            //            var elementKey = pair.Key;
-
-            //            {
-            //                var text = value as string;
-            //                if (text != null || value == null)
-            //                {
-            //                    var action = OnTextChangedAttribute.GetValue(elementKey);
-            //                    if (action != null)
-            //                    {
-            //                        _dispatch(elementKey, () => action(text ?? ""));
-            //                    }
-            //                }
-            //            }
-            //        }
-            //    }
-            //};
-        }
-
-        public void Render()
-        {
-            IsCheckedAttribute.ApplyDiff();
-            OnCheckChangedAttribute.ApplyDiff();
-            OnClickAttribute.ApplyDiff();
-            OnTextChangedAttribute.ApplyDiff();
-            ReadOnlyAttribute.ApplyDiff();
-            TextAttribute.ApplyDiff();
         }
     }
 }

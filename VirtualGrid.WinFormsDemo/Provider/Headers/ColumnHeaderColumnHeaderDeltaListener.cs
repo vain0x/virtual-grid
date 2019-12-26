@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,18 +9,20 @@ using VirtualGrid.Headers;
 
 namespace VirtualGrid.WinFormsDemo.Provider.Headers
 {
-    public struct ColumnHeaderDeltaListener
+    public struct ColumnHeaderColumnHeaderDeltaListener
         : IGridHeaderDeltaListener
     {
         private readonly DataGridViewGridProvider _provider;
 
-        public ColumnHeaderDeltaListener(DataGridViewGridProvider provider)
+        public ColumnHeaderColumnHeaderDeltaListener(DataGridViewGridProvider provider)
         {
             _provider = provider;
         }
 
         public void OnInsert(object elementKey, int index)
         {
+            Debug.Assert(elementKey != null);
+
             _provider._inner.Columns.Insert(index, new DataGridViewColumn()
             {
                 HeaderText = "",
@@ -29,10 +32,14 @@ namespace VirtualGrid.WinFormsDemo.Provider.Headers
 
             var column = _provider._inner.Columns[index];
             _provider._columnMap.Add(elementKey, column);
+            column.Tag = elementKey;
         }
 
-        public void OnRemove(object elementKey, int index)
+        public void OnRemove(int index)
         {
+            var column = _provider._inner.Columns[index];
+            var elementKey = column.Tag;
+
             _provider._columnMap.Remove(elementKey);
             _provider._inner.Columns.RemoveAt(index);
         }

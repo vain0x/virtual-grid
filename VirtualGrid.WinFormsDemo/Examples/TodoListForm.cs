@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using VirtualGrid.Layouts.BucketGrids;
 using VirtualGrid.Rendering;
 using VirtualGrid.WinFormsDemo.Provider.Headers;
 
@@ -21,12 +20,9 @@ namespace VirtualGrid.WinFormsDemo.Examples
             Dock = DockStyle.Fill
         };
 
-        private readonly BucketGridLayout _gridLayout =
-            new BucketGridLayout();
-
-        private readonly DataGridViewGridProvider _gridProvider;
-
         private readonly TodoListModel _model = new TodoListModel();
+
+        private readonly TodoListView _view;
 
         public TodoListForm()
         {
@@ -35,35 +31,20 @@ namespace VirtualGrid.WinFormsDemo.Examples
             _dataGridView.AllowUserToAddRows = false;
             Controls.Add(_dataGridView);
 
-            _gridProvider = new DataGridViewGridProvider(_dataGridView, _gridLayout, Dispatch);
-        }
+            var gridProvider = new DataGridViewGridProvider(_dataGridView, (elementKey, action) =>
+            {
+                action();
+                BeginInvoke(new Action(_view.Update));
+            });
 
-        private void Dispatch(GridElementKey _elementKey, Action action)
-        {
-            action();
-            BeginInvoke(new Action(Render));
-        }
-
-        private void Render()
-        {
-            _gridProvider._renderContext.Clear();
-            var h = new BucketGridBuilder<DataGridViewGridProvider>(
-                _gridLayout,
-                _gridProvider._renderContext,
-                new RowHeaderDeltaListener(_gridProvider),
-                new ColumnHeaderDeltaListener(_gridProvider)
-            );
-
-            new TodoListView(_model, h).Render();
-            h.Patch();
-            _gridProvider.Render();
+            _view = new TodoListView(_model, gridProvider);
         }
 
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
 
-            Render();
+            _view.Initialize();
         }
     }
 }

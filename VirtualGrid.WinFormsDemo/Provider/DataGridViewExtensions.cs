@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
+using VirtualGrid.Spreads;
 
 namespace VirtualGrid.WinFormsDemo
 {
@@ -52,17 +53,17 @@ namespace VirtualGrid.WinFormsDemo
             return true;
         }
 
-        public static bool GetCell(this DataGridView self, GridLocation location, out DataGridViewCell cell)
+        public static bool GetCell(this DataGridView self, SpreadLocation location, out DataGridViewCell cell)
         {
             switch (location.Part)
             {
-                case GridPart.ColumnHeader:
+                case SpreadPart.ColumnHeader:
                     return GetColumnHeaderCell(self, location.Index, out cell);
 
-                case GridPart.RowHeader:
+                case SpreadPart.RowHeader:
                     return GetRowHeaderCell(self, location.Index, out cell);
 
-                case GridPart.Body:
+                case SpreadPart.Body:
                     return GetBodyCell(self, location.Index, out cell);
 
                 default:

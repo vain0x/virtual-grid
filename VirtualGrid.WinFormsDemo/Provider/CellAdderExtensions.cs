@@ -1,5 +1,5 @@
 using VirtualGrid.Rendering;
-using P = VirtualGrid.WinFormsDemo.DataGridViewGridProvider;
+using P = VirtualGrid.WinFormsDemo.AttributeBuilder;
 
 namespace VirtualGrid.WinFormsDemo
 {
@@ -8,7 +8,7 @@ namespace VirtualGrid.WinFormsDemo
         /// <summary>
         /// 編集不可のテキストセルを追加する。
         /// </summary>
-        public static IGridCellBuilder<P> AddText(this IGridCellAdder<P> self, string text)
+        public static GridCellBuilder<P> AddText(this IGridCellAdder<P> self, string text)
         {
             return self.AddCell().SetText(text).SetReadOnly(true);
         }
@@ -16,19 +16,19 @@ namespace VirtualGrid.WinFormsDemo
         /// <summary>
         /// 編集可能なテキストセルを追加する。
         /// </summary>
-        public static IGridCellBuilder<P> AddEdit(this IGridCellAdder<P> self, string text)
+        public static GridCellBuilder<P> AddEdit(this IGridCellAdder<P> self, string text)
         {
             return self.AddCell().SetText(text);
         }
 
-        public static IGridCellBuilder<P> AddCheckBox(this IGridCellAdder<P> self, bool isChecked)
+        public static GridCellBuilder<P> AddCheckBox(this IGridCellAdder<P> self, bool isChecked)
         {
             return self.AddCell().SetIsChecked(isChecked).SetReadOnly(true);
         }
 
-        public static IGridCellBuilder<P> AddButton(this IGridCellAdder<P> self, string text)
+        public static GridCellBuilder<P> AddButton(this IGridCellAdder<P> self, string text)
         {
-            return self.AddText(text);
+            return self.AddText("[" + text + "]");
         }
     }
 }

@@ -4,22 +4,37 @@ namespace VirtualGrid.Rendering
 {
     public interface IGridCellAdder<TProvider>
     {
-        IGridCellBuilder<TProvider> AddCell();
+        GridCellBuilder<TProvider> AddCell();
+
+        GridElementBuilder<TProvider> AddElement();
     }
 
-    internal sealed class AnonymousGridCellAdder<TProvider>
+    public sealed class AnonymousGridCellAdder<TProvider>
         : IGridCellAdder<TProvider>
     {
-        Func<IGridCellBuilder<TProvider>> _addCell;
+        Func<GridCellBuilder<TProvider>> _addCell;
 
-        public AnonymousGridCellAdder(Func<IGridCellBuilder<TProvider>> addCell)
+        public AnonymousGridCellAdder(Func<GridCellBuilder<TProvider>> addCell)
         {
             _addCell = addCell;
         }
 
-        public IGridCellBuilder<TProvider> AddCell()
+        public GridCellBuilder<TProvider> AddCell()
         {
             return _addCell();
+        }
+
+        public GridElementBuilder<TProvider> AddElement()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public struct GridElementBuilder<TProvider>
+    {
+        public GridElementBuilder<TProvider> OnCreateOrUpdate(Action action)
+        {
+            return this;
         }
     }
 }

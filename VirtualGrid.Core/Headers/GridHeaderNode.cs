@@ -1,199 +1,103 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace VirtualGrid.Headers
 {
-    /// <summary>
-    /// グリッドのローヘッダーあるいはカラムヘッダーのレイアウトを記録したツリーのノード。
-    /// </summary>
-    public sealed class GridHeaderNode
+    public interface IGridHeaderNode
     {
-        private List<object> _oldKeys =
-            new List<object>();
+        object ElementKey { get; }
 
-        private List<GridHeaderNode> _oldNodes =
-            new List<GridHeaderNode>();
+        int Offset { get; }
 
-        private Dictionary<object, int> _oldMap =
-            new Dictionary<object, int>();
+        int TotalCount { get; }
 
-        private int _oldSpan = 0;
+        void SetOffset(int offset);
 
-        private List<object> _newKeys =
-            new List<object>();
+        GridHeaderNode Create(int offset);
 
-        private List<GridHeaderNode> _newNodes =
-            new List<GridHeaderNode>();
+        void Destroy(int offset);
 
-        internal Dictionary<object, int> _newMap =
-            new Dictionary<object, int>();
+        void Patch(int offset);
+    }
 
-        private int _newSpan = 0;
+    public struct GridHeaderNode
+        : IGridHeaderNode
+    {
+        public IGridHeaderNode _innerOpt;
 
-        private bool _isPatching = false;
-
-        public IReadOnlyList<object> Keys
+        private GridHeaderNode(object elementKey, IGridHeaderNode innerOpt)
         {
-            get
-            {
-                return _oldKeys;
-            }
+            ElementKey = elementKey;
+            _innerOpt = innerOpt;
         }
 
-        public IReadOnlyList<GridHeaderNode> Children
+        public static GridHeaderNode NewLeaf(object elementKey)
         {
-            get
-            {
-                return _oldNodes;
-            }
+            Debug.Assert(elementKey != null);
+            return new GridHeaderNode(elementKey, null);
         }
 
-        public IReadOnlyDictionary<object, int> KeyMap
+        public static GridHeaderNode NewNode(IGridHeaderNode inner)
         {
-            get
-            {
-                return _oldMap;
-            }
+            return new GridHeaderNode(inner.ElementKey, inner);
         }
 
-        public int Count
-        {
-            get
-            {
-                return _oldKeys.Count;
-            }
-        }
-
-        public int Span
-        {
-            get
-            {
-                return _oldSpan;
-            }
-        }
+        public object ElementKey { get; private set; }
 
         public bool IsLeaf
         {
             get
             {
-                return Count == 0 && Span >= 1;
+                return _innerOpt == null;
             }
         }
 
-        public bool TryGetNode(object elementKey, out GridHeaderNode child)
+        public int Offset
         {
-            int index;
-            if (!_oldMap.TryGetValue(elementKey, out index))
+            get
             {
-                child = null;
-                return false;
+                return _innerOpt != null ? _innerOpt.Offset : 0;
             }
-
-            child = _oldNodes[index];
-            return true;
         }
 
-        public IEnumerable<object> Hit(object elementKey, int index)
+        public int TotalCount
         {
-            if (index < 0)
-                yield break;
-
-            if (IsLeaf && index < Span)
+            get
             {
-                if (elementKey != null)
-                    yield return elementKey;
+                return _innerOpt != null ? _innerOpt.TotalCount : 1;
             }
-            else
+        }
+
+        public void SetOffset(int offset)
+        {
+            if (_innerOpt != null)
             {
-                for (var i = 0; i < Count; i++)
-                {
-                    foreach (var hit in Children[i].Hit(Keys[i], index))
-                    {
-                        yield return hit;
-                    }
-
-                    index -= Children[i].Span;
-                }
+                _innerOpt.SetOffset(offset);
             }
         }
 
-        internal void BeginPatch()
+        public GridHeaderNode Create(int offset)
         {
-            Debug.Assert(!_isPatching);
-            _isPatching = true;
+            if (_innerOpt == null)
+                return this;
 
-            Debug.Assert(_newKeys.Count == 0);
-            Debug.Assert(_newNodes.Count == 0);
-            Debug.Assert(_newMap.Count == 0);
-            Debug.Assert(_newSpan == 0);
+            return _innerOpt.Create(offset);
         }
 
-        internal void EndPatch()
+        public void Patch(int offset)
         {
-            Debug.Assert(_isPatching);
-            _isPatching = false;
-
-            Debug.Assert(_newKeys.Count == _newNodes.Count);
-            Debug.Assert(_newKeys.Count == _newMap.Count);
-
-            Swap(ref _oldKeys, ref _newKeys);
-            Swap(ref _oldNodes, ref _newNodes);
-            Swap(ref _oldMap, ref _newMap);
-            Swap(ref _oldSpan, ref _newSpan);
-
-            _newKeys.Clear();
-            _newNodes.Clear();
-            _newMap.Clear();
-            _newSpan = 0;
+            if (_innerOpt != null)
+            {
+                _innerOpt.Patch(offset);
+            }
         }
 
-        internal void AddNewIndex(object elementKey, int index)
+        public void Destroy(int offset)
         {
-            Debug.Assert(_isPatching);
-
-            // AddNewNode より前にだけ呼べる。
-            Debug.Assert(_newKeys.Count == 0);
-
-            // キーが重複してはいけない。
-            Debug.Assert(!_newMap.ContainsKey(elementKey));
-
-            _newMap.Add(elementKey, index);
-        }
-
-        internal void AddNewNode(object elementKey, GridHeaderNode node)
-        {
-            Debug.Assert(_isPatching);
-
-            Debug.Assert(elementKey != null);
-            Debug.Assert(node != null);
-
-            // _newMap のインデックスが正しいことを表明。
-            Debug.Assert(_newMap.ContainsKey(elementKey) && _newMap[elementKey] == _newKeys.Count);
-
-            _newKeys.Add(elementKey);
-            _newNodes.Add(node);
-
-            Debug.Assert(_oldKeys.Count == _oldNodes.Count);
-        }
-
-        internal void SetNewSpan(int newSpan)
-        {
-            Debug.Assert(_isPatching);
-            Debug.Assert(_newSpan == 0);
-            Debug.Assert(newSpan >= _newMap.Count);
-
-            _newSpan = newSpan;
-        }
-
-        private static void Swap<T>(ref T first, ref T second)
-        {
-            var t = first;
-            first = second;
-            second = t;
+            if (_innerOpt != null)
+            {
+                _innerOpt.Destroy(offset);
+            }
         }
     }
 }

@@ -5,13 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VirtualGrid
+namespace VirtualGrid.Spreads
 {
     [DebuggerDisplay("{AsDebug}")]
-    public struct GridLocation
-        : IEquatable<GridLocation>
+    public struct SpreadLocation
+        : IEquatable<SpreadLocation>
     {
-        public readonly GridPart Part;
+        public readonly SpreadPart Part;
 
         public readonly GridVector Index;
 
@@ -23,38 +23,38 @@ namespace VirtualGrid
             }
         }
 
-        private GridLocation(GridPart part, GridVector index)
+        private SpreadLocation(SpreadPart part, GridVector index)
         {
             Part = part;
             Index = index;
         }
 
-        public static GridLocation Create(GridPart part, GridVector index)
+        public static SpreadLocation Create(SpreadPart part, GridVector index)
         {
-            return new GridLocation(part, index);
+            return new SpreadLocation(part, index);
         }
 
-        public static GridLocation NewColumnHeader(GridVector index)
+        public static SpreadLocation NewColumnHeader(GridVector index)
         {
-            return Create(GridPart.ColumnHeader, index);
+            return Create(SpreadPart.ColumnHeader, index);
         }
 
-        public static GridLocation NewRowHeader(GridVector index)
+        public static SpreadLocation NewRowHeader(GridVector index)
         {
-            return Create(GridPart.RowHeader, index);
+            return Create(SpreadPart.RowHeader, index);
         }
 
-        public static GridLocation NewBody(GridVector index)
+        public static SpreadLocation NewBody(GridVector index)
         {
-            return Create(GridPart.Body, index);
+            return Create(SpreadPart.Body, index);
         }
 
         public override bool Equals(object obj)
         {
-            return obj is GridLocation location && Equals(location);
+            return obj is SpreadLocation location && Equals(location);
         }
 
-        public bool Equals(GridLocation other)
+        public bool Equals(SpreadLocation other)
         {
             return Part == other.Part &&
                    Index.Equals(other.Index);
@@ -68,12 +68,12 @@ namespace VirtualGrid
             return hashCode;
         }
 
-        public static bool operator ==(GridLocation left, GridLocation right)
+        public static bool operator ==(SpreadLocation left, SpreadLocation right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(GridLocation left, GridLocation right)
+        public static bool operator !=(SpreadLocation left, SpreadLocation right)
         {
             return !(left == right);
         }

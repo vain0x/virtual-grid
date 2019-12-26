@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VirtualGrid
+namespace VirtualGrid.Spreads
 {
     /// <summary>
-    /// グリッドの部位
+    /// スプレッドの部位
     /// </summary>
-    public enum GridPart
+    public enum SpreadPart
     {
         /// <summary>
         /// ローヘッダー (左にあるヘッダー)

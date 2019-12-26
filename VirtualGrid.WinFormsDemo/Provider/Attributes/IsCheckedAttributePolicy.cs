@@ -1,11 +1,12 @@
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
+using VirtualGrid.Spreads;
 
 namespace VirtualGrid.WinFormsDemo
 {
     public struct IsCheckedAttributePolicy
-        : IGridDataAttributePolicy<bool>
+        : IDataAttributePolicy<bool>
     {
         private readonly DataGridViewGridProvider _provider;
 
@@ -22,7 +23,7 @@ namespace VirtualGrid.WinFormsDemo
             }
         }
 
-        public void OnChange(GridElementKey elementKey, GridLocation location, bool oldValue, bool newValue)
+        public void OnChange(SpreadElementKey elementKey, SpreadLocation location, bool oldValue, bool newValue)
         {
             DataGridViewCell cell;
             if (!_provider._inner.GetCell(location, out cell))

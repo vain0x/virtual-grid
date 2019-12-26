@@ -6,10 +6,29 @@ using System.Threading.Tasks;
 
 namespace VirtualGrid.WinFormsDemo.Examples
 {
+    public sealed class TodoListDelta
+    {
+        public readonly string Kind;
+
+        public readonly TodoItem Item;
+
+        public readonly int Index;
+
+        public TodoListDelta(string kind, TodoItem item, int index)
+        {
+            Kind = kind;
+            Item = item;
+            Index = index;
+        }
+    }
+
     public sealed class TodoListModel
     {
         private readonly List<TodoItem> _items =
             new List<TodoItem>();
+
+        public readonly List<TodoListDelta> _dirtyItems =
+            new List<TodoListDelta>();
 
         public IReadOnlyList<TodoItem> Items
         {
@@ -36,26 +55,32 @@ namespace VirtualGrid.WinFormsDemo.Examples
         {
             var index = _items.FindIndex(item => item == sibling);
             if (index < 0)
-            {
-                InsertLast();
                 return;
-            }
 
-            _items.Insert(index, new TodoItem());
+            var newItem = new TodoItem();
+            _items.Insert(index, newItem);
+            _dirtyItems.Add(new TodoListDelta("INSERT", newItem, index));
 
             EnsureLastBlank();
         }
 
         public void InsertLast()
         {
-            _items.Add(new TodoItem());
+            var newItem = new TodoItem();
+            _items.Add(newItem);
+            _dirtyItems.Add(new TodoListDelta("INSERT", newItem, _items.Count - 1));
 
             EnsureLastBlank();
         }
 
         public void Remove(TodoItem item)
         {
-            _items.Remove(item);
+            var index = _items.FindIndex(x => x == item);
+            if (index < 0)
+                return;
+
+            _items.RemoveAt(index);
+            _dirtyItems.Add(new TodoListDelta("REMOVE", item, index));
 
             EnsureLastBlank();
         }
@@ -63,11 +88,13 @@ namespace VirtualGrid.WinFormsDemo.Examples
         public void SetIsDone(TodoItem item, bool isDone)
         {
             item.IsDone = isDone;
+            _dirtyItems.Add(new TodoListDelta("CHANGE", item, -1));
         }
 
         public void SetItemText(TodoItem item, string text)
         {
             item.Text = text;
+            _dirtyItems.Add(new TodoListDelta("CHANGE", item, -1));
 
             EnsureLastBlank();
         }

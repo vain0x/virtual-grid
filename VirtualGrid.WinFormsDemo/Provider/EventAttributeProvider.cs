@@ -26,7 +26,7 @@ namespace VirtualGrid.WinFormsDemo
             _data.SetValue(elementKey, value);
         }
 
-        public void ApplyDiff()
+        public void Patch()
         {
             _data.MarkAsClean();
         }

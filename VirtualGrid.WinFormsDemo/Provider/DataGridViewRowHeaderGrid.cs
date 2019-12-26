@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
-namespace VirtualGrid.Layouts
+namespace VirtualGrid.WinFormsDemo
 {
-    public interface IGridPartLayout
+    public sealed class DataGridViewRowHeaderGrid
     {
-        IEnumerable<GridElementKey> Hit(GridVector index);
     }
 }
