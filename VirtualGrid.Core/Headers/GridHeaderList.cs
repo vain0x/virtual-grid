@@ -63,7 +63,7 @@ namespace VirtualGrid.Headers
 
         public GridHeaderListBuilder GetBuilder()
         {
-            return _builder ?? new GridHeaderListBuilder(this);
+            return _builder;
         }
 
         public void SetOffset(int offset)
