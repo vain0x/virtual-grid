@@ -41,7 +41,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
 
         private readonly DataGridViewGridProvider _provider;
 
-        private readonly SpreadLayout<DataGridViewGridProvider> _layout;
+        private readonly SpreadLayout<GridLayout<DataGridViewGridProvider, Provider.Headers.RowHeaderRowHeaderDeltaListener, Provider.Headers.RowHeaderColumnHeaderDeltaListener>, GridLayout<DataGridViewGridProvider, Provider.Headers.ColumnHeaderRowHeaderDeltaListener, Provider.Headers.ColumnHeaderColumnHeaderDeltaListener>> _layout;
 
         public TodoListView(TodoListModel model, DataGridViewGridProvider provider)
         {
@@ -53,31 +53,31 @@ namespace VirtualGrid.WinFormsDemo.Examples
             var chrh = "KEY_SPREAD_COLUMN_HEADER_ROW_HEADER";
             var chch = "KEY_SPREAD_COLUMN_HEADER_COLUMN_HEADER";
 
-            var rowHeader = new GridLayout<DataGridViewGridProvider>(
-                new GridHeader(
+            var rowHeader = new GridLayout<DataGridViewGridProvider, Provider.Headers.RowHeaderRowHeaderDeltaListener, Provider.Headers.RowHeaderColumnHeaderDeltaListener>(
+                new GridHeader<Provider.Headers.RowHeaderRowHeaderDeltaListener>(
                     rhrh,
                     new DataGridViewRowElementKeyInterner(provider),
                     new Provider.Headers.RowHeaderRowHeaderDeltaListener(provider)
                 ),
-                new GridHeader(
+                new GridHeader<Provider.Headers.RowHeaderColumnHeaderDeltaListener>(
                     rhch,
                     new SingletonElementKeyInterner(rhch),
                     new Provider.Headers.RowHeaderColumnHeaderDeltaListener()
                 ));
 
-            var columnHeader = new GridLayout<DataGridViewGridProvider>(
-                new GridHeader(
+            var columnHeader = new GridLayout<DataGridViewGridProvider, Provider.Headers.ColumnHeaderRowHeaderDeltaListener, Provider.Headers.ColumnHeaderColumnHeaderDeltaListener>(
+                new GridHeader<Provider.Headers.ColumnHeaderRowHeaderDeltaListener>(
                     chrh,
                     new SingletonElementKeyInterner(chrh),
                     new Provider.Headers.ColumnHeaderRowHeaderDeltaListener()
                 ),
-                new GridHeader(
+                new GridHeader<Provider.Headers.ColumnHeaderColumnHeaderDeltaListener>(
                     chch,
                     new DataGridViewColumnElementKeyInterner(provider),
                     new Provider.Headers.ColumnHeaderColumnHeaderDeltaListener(provider)
                 ));
 
-            _layout = new SpreadLayout<DataGridViewGridProvider>(
+            _layout = SpreadLayout.Create(
                 rowHeader,
                 columnHeader
             );

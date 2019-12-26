@@ -8,15 +8,17 @@ using VirtualGrid.Headers;
 
 namespace VirtualGrid.Layouts
 {
-    public sealed class GridLayoutBuilder<TProvider>
+    public sealed class GridLayoutBuilder<TProvider, TRowHeaderDeltaListener, TColumnHeaderDeltaListener>
+        where TRowHeaderDeltaListener : struct, IGridHeaderDeltaListener
+        where TColumnHeaderDeltaListener : struct, IGridHeaderDeltaListener
     {
-        private GridLayout<TProvider> _inner;
+        private GridLayout<TProvider, TRowHeaderDeltaListener, TColumnHeaderDeltaListener> _inner;
 
-        internal GridHeaderBuilder _rowHeader;
+        internal GridHeaderBuilder<TRowHeaderDeltaListener> _rowHeader;
 
-        internal GridHeaderBuilder _columnHeader;
+        internal GridHeaderBuilder<TColumnHeaderDeltaListener> _columnHeader;
 
-        public GridLayoutBuilder(GridLayout<TProvider> inner, GridHeaderBuilder rowHeader, GridHeaderBuilder columnHeader)
+        public GridLayoutBuilder(GridLayout<TProvider, TRowHeaderDeltaListener, TColumnHeaderDeltaListener> inner, GridHeaderBuilder<TRowHeaderDeltaListener> rowHeader, GridHeaderBuilder<TColumnHeaderDeltaListener> columnHeader)
         {
             _inner = inner;
             _rowHeader = rowHeader;

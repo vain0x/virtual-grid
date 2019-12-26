@@ -8,16 +8,24 @@ using VirtualGrid.Layouts;
 
 namespace VirtualGrid.Spreads
 {
-    public sealed class SpreadLayout<TProvider>
+    public sealed class SpreadLayout<TRowHeader, TColumnHeader>
     {
-        public GridLayout<TProvider> RowHeader;
+        public TRowHeader RowHeader;
 
-        public GridLayout<TProvider> ColumnHeader;
+        public TColumnHeader ColumnHeader;
 
-        public SpreadLayout(GridLayout<TProvider> rowHeader, GridLayout<TProvider> columnHeader)
+        public SpreadLayout(TRowHeader rowHeader, TColumnHeader columnHeader)
         {
             RowHeader = rowHeader;
             ColumnHeader = columnHeader;
+        }
+    }
+
+    public static class SpreadLayout
+    {
+        public static SpreadLayout<TRowHeader, TColumnHeader> Create<TRowHeader, TColumnHeader>(TRowHeader rowHeader, TColumnHeader columnHeader)
+        {
+            return new SpreadLayout<TRowHeader, TColumnHeader>(rowHeader, columnHeader);
         }
     }
 }

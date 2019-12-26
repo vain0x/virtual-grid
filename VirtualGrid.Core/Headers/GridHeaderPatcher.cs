@@ -5,13 +5,14 @@ using System.Linq;
 
 namespace VirtualGrid.Headers
 {
-    public struct GridHeaderPatcher
+    public struct GridHeaderPatcher<TListener>
+        where TListener : struct, IGridHeaderDeltaListener
     {
-        private readonly GridHeader _oldElement;
+        private readonly GridHeader<TListener> _oldElement;
 
-        private readonly GridHeaderBuilder _newElement;
+        private readonly GridHeaderBuilder<TListener> _newElement;
 
-        private readonly IGridHeaderDeltaListener _listener;
+        private readonly TListener _listener;
 
         private List<GridHeaderNode> _oldKeys
         {
@@ -45,7 +46,7 @@ namespace VirtualGrid.Headers
             }
         }
 
-        public GridHeaderPatcher(GridHeader oldElement, GridHeaderBuilder newElement, IGridHeaderDeltaListener listener)
+        public GridHeaderPatcher(GridHeader<TListener> oldElement, GridHeaderBuilder<TListener> newElement, TListener listener)
         {
             _oldElement = oldElement;
             _newElement = newElement;
@@ -146,7 +147,7 @@ namespace VirtualGrid.Headers
                     var node = _newKeys[ti].Create(offset + count);
                     if (node.IsLeaf)
                     {
-                        _listener.OnInsert(node.ElementKey, offset + count);;
+                        _listener.OnInsert(node.ElementKey, offset + count);
                     }
                     count += node.TotalCount;
 

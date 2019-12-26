@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace VirtualGrid.Headers
 {
-    public sealed class GridHeader
+    public sealed class GridHeader<TListener>
         : IGridHeaderParent
         , IGridHeaderNode
+        where TListener : struct, IGridHeaderDeltaListener
     {
         internal List<GridHeaderNode> Keys =
             new List<GridHeaderNode>();
@@ -17,11 +18,12 @@ namespace VirtualGrid.Headers
         internal Dictionary<GridHeaderNode, int> KeyMap =
             new Dictionary<GridHeaderNode, int>();
 
-        internal GridHeaderBuilder _builder;
+        internal GridHeaderBuilder<TListener> _builder;
 
+        // FIXME: デメテル違反
         internal readonly IElementKeyInterner Interner;
 
-        internal readonly IGridHeaderDeltaListener Listener;
+        internal readonly TListener Listener;
 
         public object ElementKey { get; private set; }
 
@@ -31,18 +33,18 @@ namespace VirtualGrid.Headers
 
         public int TotalCount { get; private set; }
 
-        public GridHeader(object elementKey, IElementKeyInterner interner, IGridHeaderDeltaListener listener)
+        public GridHeader(object elementKey, IElementKeyInterner interner, TListener listener)
         {
             ElementKey = elementKey;
             Interner = interner;
             Listener = listener;
 
-            _builder = new GridHeaderBuilder(this);
+            _builder = new GridHeaderBuilder<TListener>(this);
         }
 
-        public GridHeaderBuilder GetBuilder()
+        public GridHeaderBuilder<TListener> GetBuilder()
         {
-            return _builder ?? new GridHeaderBuilder(this);
+            return _builder;
         }
 
         internal void Clear()
@@ -87,7 +89,7 @@ namespace VirtualGrid.Headers
 
         public void Patch(int offset)
         {
-            new GridHeaderPatcher(this, _builder, Listener).Patch(offset);
+            new GridHeaderPatcher<TListener>(this, _builder, Listener).Patch(offset);
 
             Offset = offset;
             IsDirty = false;

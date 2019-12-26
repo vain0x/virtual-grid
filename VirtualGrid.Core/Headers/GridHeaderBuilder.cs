@@ -4,10 +4,11 @@ using System.Diagnostics;
 
 namespace VirtualGrid.Headers
 {
-    public sealed class GridHeaderBuilder
+    public sealed class GridHeaderBuilder<TListener>
         : IGridHeaderNode
+        where TListener : struct, IGridHeaderDeltaListener
     {
-        private GridHeader _inner;
+        private GridHeader<TListener> _inner;
 
         internal List<GridHeaderNode> Keys =
             new List<GridHeaderNode>();
@@ -15,7 +16,7 @@ namespace VirtualGrid.Headers
         internal Dictionary<GridHeaderNode, int> KeyMap =
             new Dictionary<GridHeaderNode, int>();
 
-        public GridHeaderBuilder(GridHeader parent)
+        public GridHeaderBuilder(GridHeader<TListener> parent)
         {
             _inner = parent;
         }
