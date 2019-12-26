@@ -23,10 +23,10 @@ namespace VirtualGrid.WinFormsDemo
 
         public object TryGetKey(int index)
         {
-            if ((uint)index >= _provider._inner.Columns.Count)
+            if ((uint)index >= _provider._dataGridView.Columns.Count)
                 return null;
 
-            return _provider._inner.Columns[index].Tag;
+            return _provider._dataGridView.Columns[index].Tag;
         }
     }
 }

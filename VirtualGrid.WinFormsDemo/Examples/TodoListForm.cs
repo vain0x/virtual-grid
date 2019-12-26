@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using VirtualGrid.Rendering;
-using VirtualGrid.WinFormsDemo.Provider.Headers;
 
 namespace VirtualGrid.WinFormsDemo.Examples
 {

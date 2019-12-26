@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Windows.Forms;
 using VirtualGrid.Spreads;
@@ -7,13 +8,6 @@ namespace VirtualGrid.WinFormsDemo
     public struct ReadOnlyAttributePolicy
         : IDataAttributePolicy<bool>
     {
-        private readonly DataGridViewGridProvider _provider;
-
-        public ReadOnlyAttributePolicy(DataGridViewGridProvider provider)
-        {
-            _provider = provider;
-        }
-
         public bool DefaultValue
         {
             get
@@ -22,16 +16,12 @@ namespace VirtualGrid.WinFormsDemo
             }
         }
 
-        public void OnChange(SpreadElementKey elementKey, SpreadLocation location, bool oldValue, bool newValue)
+        public void OnChange(DataGridViewCell cell, bool oldValue, bool newValue)
         {
-            if (location.Part != SpreadPart.Body)
+            // ヘッダーセルの ReadOnly は読み取り専用なので変更しない。
+            if (cell.RowIndex < 0 || cell.ColumnIndex < 0)
                 return;
 
-            DataGridViewCell cell;
-            if (!_provider._inner.GetCell(location, out cell))
-                return;
-
-            Debug.WriteLine("ReadOnly {0} {1} value={2}", elementKey, location, newValue);
             cell.ReadOnly = newValue;
         }
     }

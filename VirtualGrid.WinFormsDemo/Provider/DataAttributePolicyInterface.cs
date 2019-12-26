@@ -1,3 +1,4 @@
+using System.Windows.Forms;
 using VirtualGrid.Spreads;
 
 namespace VirtualGrid.WinFormsDemo
@@ -6,6 +7,6 @@ namespace VirtualGrid.WinFormsDemo
     {
         T DefaultValue { get; }
 
-        void OnChange(SpreadElementKey elementKey, SpreadLocation location, T oldValue, T newValue);
+        void OnChange(DataGridViewCell cell, T oldValue, T newValue);
     }
 }

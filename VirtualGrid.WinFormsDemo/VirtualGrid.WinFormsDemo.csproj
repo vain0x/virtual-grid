@@ -49,8 +49,9 @@
     <Compile Include="Provider\AttributeBuilder.cs" />
     <Compile Include="Provider\Attributes\IsCheckedAttributePolicy.cs" />
     <Compile Include="Provider\Attributes\ReadOnlyAttributePolicy.cs" />
+    <Compile Include="Provider\DataGridViewBodyPart.cs" />
     <Compile Include="Provider\DataGridViewColumnElementKeyInterner.cs" />
-    <Compile Include="Provider\DataGridViewExtensions.cs" />
+    <Compile Include="Provider\DataGridViewColumnHeaderPart.cs" />
     <Compile Include="Provider\DataGridViewGridProvider.cs" />
     <Compile Include="Examples\TinyCounterForm.cs">
       <SubType>Form</SubType>
@@ -83,11 +84,8 @@
     <Compile Include="Provider\DataAttributePolicyInterface.cs" />
     <Compile Include="Provider\DataGridViewRowElementKeyInterner.cs" />
     <Compile Include="Provider\EventAttributeProvider.cs" />
-    <Compile Include="Provider\Headers\ColumnHeaderColumnHeaderDeltaListener.cs" />
-    <Compile Include="Provider\Headers\ColumnHeaderRowHeaderDeltaListener.cs" />
-    <Compile Include="Provider\Headers\RowHeaderColumnHeaderDeltaListener.cs" />
-    <Compile Include="Provider\Headers\RowHeaderRowHeaderDeltaListener.cs" />
-    <Compile Include="Provider\DataGridViewRowHeaderGrid.cs" />
+    <Compile Include="Provider\DataGridViewRowHeaderPart.cs" />
+    <Compile Include="Provider\DataGridViewPartInterface.cs" />
     <EmbeddedResource Include="MainMenuForm.resx">
       <DependentUpon>MainMenuForm.cs</DependentUpon>
     </EmbeddedResource>

@@ -10,20 +10,18 @@ namespace VirtualGrid.WinFormsDemo
     public sealed class GridDataAttributeProvider<T, TPolicy>
         where TPolicy : struct, IDataAttributePolicy<T>
     {
-        private SpreadPart _part;
-
-        private GridAttributeData<T> _data;
+        private IDataGridViewPart _part;
 
         private TPolicy _policy;
 
-        private DataGridViewGridProvider _provider;
+        private GridAttributeData<T> _data;
 
-        public GridDataAttributeProvider(SpreadPart part, TPolicy policy, DataGridViewGridProvider provider)
+        public GridDataAttributeProvider(IDataGridViewPart part, TPolicy policy)
         {
             _part = part;
-            _data = new GridAttributeData<T>(policy.DefaultValue);
             _policy = policy;
-            _provider = provider;
+
+            _data = new GridAttributeData<T>(policy.DefaultValue);
         }
 
         public bool IsAttached(GridElementKey elementKey)
@@ -64,24 +62,20 @@ namespace VirtualGrid.WinFormsDemo
 
             public void OnAdd(GridElementKey elementKey, T newValue)
             {
-                var spreadElementKey = SpreadElementKey.Create(_parent._part, elementKey);
+                var cell = _parent._part.TryGetCell(elementKey);
+                if (cell == null)
+                    return;
 
-                SpreadLocation location;
-                if (_parent._provider.TryGetLocation(spreadElementKey, out location))
-                {
-                    _parent._policy.OnChange(spreadElementKey, location, _parent._data.DefaultValue, newValue);
-                }
+                _parent._policy.OnChange(cell, _parent._data.DefaultValue, newValue);
             }
 
             public void OnChange(GridElementKey elementKey, T oldValue, T newValue)
             {
-                var spreadElementKey = SpreadElementKey.Create(_parent._part, elementKey);
-
-                SpreadLocation location;
-                if (_parent._provider.TryGetLocation(spreadElementKey, out location))
-                {
-                    _parent._policy.OnChange(spreadElementKey, location, oldValue, newValue);
-                }
+                var cell = _parent._part.TryGetCell(elementKey);
+                if (cell == null)
+                    return;
+                
+                _parent._policy.OnChange(cell, oldValue, newValue);
             }
 
             public void OnRemove(GridElementKey elementKey, T oldValue)
@@ -92,10 +86,10 @@ namespace VirtualGrid.WinFormsDemo
 
     public static class GridDataAttributeProvider
     {
-        public static GridDataAttributeProvider<T, TPolicy> Create<T, TPolicy>(SpreadPart part, T _default, TPolicy policy, DataGridViewGridProvider provider)
+        public static GridDataAttributeProvider<T, TPolicy> Create<T, TPolicy>(IDataGridViewPart part, T _default, TPolicy policy)
             where TPolicy : struct, IDataAttributePolicy<T>
         {
-            return new GridDataAttributeProvider<T, TPolicy>(part, policy, provider);
+            return new GridDataAttributeProvider<T, TPolicy>(part, policy);
         }
     }
 }

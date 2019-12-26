@@ -13,9 +13,9 @@ namespace VirtualGrid.WinFormsDemo
 {
     public sealed class AttributeBuilder
     {
-        public readonly SpreadPart Part;
-
         private readonly DataGridViewGridProvider _provider;
+
+        private readonly IDataGridViewPart _part;
 
         public readonly GridDataAttributeProvider<bool, IsCheckedAttributePolicy> IsCheckedAttribute;
 
@@ -29,13 +29,13 @@ namespace VirtualGrid.WinFormsDemo
 
         public readonly GridDataAttributeProvider<string, TextAttributePolicy> TextAttribute;
 
-        public AttributeBuilder(SpreadPart part, DataGridViewGridProvider provider)
+        public AttributeBuilder(DataGridViewGridProvider provider, IDataGridViewPart part)
         {
-            Part = part;
-
             _provider = provider;
 
-            IsCheckedAttribute = GridDataAttributeProvider.Create(Part, default(bool), new IsCheckedAttributePolicy(provider), provider);
+            _part = part;
+
+            IsCheckedAttribute = GridDataAttributeProvider.Create(_part, default(bool), new IsCheckedAttributePolicy());
 
             OnCheckChangedAttribute = new GridEventAttributeProvider<Action<bool>>();
 
@@ -43,90 +43,77 @@ namespace VirtualGrid.WinFormsDemo
 
             OnTextChangedAttribute = new GridEventAttributeProvider<Action<string>>();
 
-            ReadOnlyAttribute = GridDataAttributeProvider.Create(Part, default(bool), new ReadOnlyAttributePolicy(provider), provider);
+            ReadOnlyAttribute = GridDataAttributeProvider.Create(_part, default(bool), new ReadOnlyAttributePolicy());
 
-            TextAttribute = GridDataAttributeProvider.Create(Part, default(string), new TextAttributePolicy(provider), provider);
+            TextAttribute = GridDataAttributeProvider.Create(_part, default(string), new TextAttributePolicy());
         }
 
         public void Attach()
         {
-            _provider._inner.CellClick += OnCellClick;
-            _provider._inner.CellValueChanged += OnCellValueChanged;
+            _provider._dataGridView.CellClick += OnCellClick;
+            _provider._dataGridView.CellValueChanged += OnCellValueChanged;
         }
 
         public void Detach()
         {
-            _provider._inner.CellClick -= OnCellClick;
-            _provider._inner.CellValueChanged -= OnCellValueChanged;
+            _provider._dataGridView.CellClick -= OnCellClick;
+            _provider._dataGridView.CellValueChanged -= OnCellValueChanged;
         }
 
         private void OnCellClick(object _sender, DataGridViewCellEventArgs ev)
         {
-            // ヘッダーのイベントは未実装
-            if (ev.RowIndex < 0 || ev.ColumnIndex < 0)
+            var rowIndex = RowIndex.From(ev.RowIndex);
+            var columnIndex = ColumnIndex.From(ev.ColumnIndex);
+            var index = GridVector.Create(rowIndex, columnIndex);
+
+            var elementKeyOpt = _part.TryGetKey(index);
+            if (!elementKeyOpt.HasValue)
                 return;
 
-            var rowElementKey = new DataGridViewRowElementKeyInterner(_provider).TryGetKey(ev.RowIndex);
-            if (rowElementKey == null)
-                return;
-
-            var columnElementKey = new DataGridViewColumnElementKeyInterner(_provider).TryGetKey(ev.ColumnIndex);
-            if (columnElementKey == null)
-                return;
-
-            foreach (var elementKey in new[] { GridElementKey.Create(rowElementKey, columnElementKey) })
+            // チェックボックスのチェックを実装する。
+            // FIXME: セルタイプを見る。
+            if (IsCheckedAttribute.IsAttached(elementKeyOpt.Value))
             {
-                Debug.WriteLine("Click({0})", elementKey);
-
-                // チェックボックスのチェックを実装する。
-                // FIXME: セルタイプを見る。
-                if (IsCheckedAttribute.IsAttached(elementKey))
+                var isChecked = IsCheckedAttribute.GetValue(elementKeyOpt.Value);
+                var action = OnCheckChangedAttribute.GetValue(elementKeyOpt.Value);
+                if (action != null)
                 {
-                    var isChecked = IsCheckedAttribute.GetValue(elementKey);
-                    var action = OnCheckChangedAttribute.GetValue(elementKey);
-                    if (action != null)
-                    {
-                        _provider._dispatch(elementKey, () => action(!isChecked));
-                    }
+                    _provider._dispatch(elementKeyOpt.Value, () => action(!isChecked));
                 }
+            }
 
+            {
+                var action = OnClickAttribute.GetValue(elementKeyOpt.Value);
+                if (action != null)
                 {
-                    var action = OnClickAttribute.GetValue(elementKey);
-                    if (action != null)
-                    {
-                        _provider._dispatch(elementKey, action);
-                    }
+                    _provider._dispatch(elementKeyOpt.Value, action);
                 }
             }
         }
 
         private void OnCellValueChanged(object _sender, DataGridViewCellEventArgs ev)
         {
-            if (ev.RowIndex < 0 || ev.ColumnIndex < 0)
+            var rowIndex = RowIndex.From(ev.RowIndex);
+            var columnIndex = ColumnIndex.From(ev.ColumnIndex);
+            var index = GridVector.Create(rowIndex, columnIndex);
+
+            var elementKeyOpt = _part.TryGetKey(index);
+            if (!elementKeyOpt.HasValue)
                 return;
 
-            var rowElementKey = new DataGridViewRowElementKeyInterner(_provider).TryGetKey(ev.RowIndex);
-            if (rowElementKey == null)
+            var cell = _part.TryGetCell(elementKeyOpt.Value);
+            if (cell == null)
                 return;
 
-            var columnElementKey = new DataGridViewColumnElementKeyInterner(_provider).TryGetKey(ev.ColumnIndex);
-            if (columnElementKey == null)
-                return;
+            var value = cell.Value;
 
-            var value = _provider._inner.Rows[ev.RowIndex].Cells[ev.ColumnIndex].Value;
-
-            foreach (var elementKey in new[] { GridElementKey.Create(rowElementKey, columnElementKey) })
+            var text = value as string;
+            if (text != null || value == null)
             {
-                Debug.WriteLine("ValueChanged({0})", elementKey);
-
-                var text = value as string;
-                if (text != null || value == null)
+                var action = OnTextChangedAttribute.GetValue(elementKeyOpt.Value);
+                if (action != null)
                 {
-                    var action = OnTextChangedAttribute.GetValue(elementKey);
-                    if (action != null)
-                    {
-                        _provider._dispatch(elementKey, () => action(text ?? ""));
-                    }
+                    _provider._dispatch(elementKeyOpt.Value, () => action(text ?? ""));
                 }
             }
         }

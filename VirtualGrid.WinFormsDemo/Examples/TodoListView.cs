@@ -8,6 +8,16 @@ using VirtualGrid.Headers;
 using VirtualGrid.Layouts;
 using VirtualGrid.Rendering;
 using VirtualGrid.Spreads;
+using RowHeaderLayout = VirtualGrid.Layouts.GridLayout<
+    VirtualGrid.WinFormsDemo.DataGridViewGridProvider,
+    VirtualGrid.WinFormsDemo.DataGridViewRowHeaderPart.RowHeaderDeltaListener,
+    VirtualGrid.WinFormsDemo.DataGridViewRowHeaderPart.ColumnHeaderDeltaListener
+>;
+using ColumnHeaderLayout = VirtualGrid.Layouts.GridLayout<
+    VirtualGrid.WinFormsDemo.DataGridViewGridProvider,
+    VirtualGrid.WinFormsDemo.DataGridViewColumnHeaderPart.RowHeaderDeltaListener,
+    VirtualGrid.WinFormsDemo.DataGridViewColumnHeaderPart.ColumnHeaderDeltaListener
+>;
 
 namespace VirtualGrid.WinFormsDemo.Examples
 {
@@ -17,7 +27,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
 
         private readonly DataGridViewGridProvider _provider;
 
-        private readonly SpreadLayout<GridLayout<DataGridViewGridProvider, Provider.Headers.RowHeaderRowHeaderDeltaListener, Provider.Headers.RowHeaderColumnHeaderDeltaListener>, GridLayout<DataGridViewGridProvider, Provider.Headers.ColumnHeaderRowHeaderDeltaListener, Provider.Headers.ColumnHeaderColumnHeaderDeltaListener>> _layout;
+        private readonly SpreadLayout<RowHeaderLayout, ColumnHeaderLayout> _layout;
 
         public TodoListView(TodoListModel model, DataGridViewGridProvider provider)
         {
@@ -29,28 +39,28 @@ namespace VirtualGrid.WinFormsDemo.Examples
             var chrh = "KEY_SPREAD_COLUMN_HEADER_ROW_HEADER";
             var chch = "KEY_SPREAD_COLUMN_HEADER_COLUMN_HEADER";
 
-            var rowHeader = new GridLayout<DataGridViewGridProvider, Provider.Headers.RowHeaderRowHeaderDeltaListener, Provider.Headers.RowHeaderColumnHeaderDeltaListener>(
-                new GridHeader<Provider.Headers.RowHeaderRowHeaderDeltaListener>(
+            var rowHeader = new RowHeaderLayout(
+                new GridHeader<DataGridViewRowHeaderPart.RowHeaderDeltaListener>(
                     rhrh,
                     new DataGridViewRowElementKeyInterner(provider),
-                    new Provider.Headers.RowHeaderRowHeaderDeltaListener(provider)
+                    new DataGridViewRowHeaderPart.RowHeaderDeltaListener(provider)
                 ),
-                new GridHeader<Provider.Headers.RowHeaderColumnHeaderDeltaListener>(
+                new GridHeader<DataGridViewRowHeaderPart.ColumnHeaderDeltaListener>(
                     rhch,
                     new SingletonElementKeyInterner(rhch),
-                    new Provider.Headers.RowHeaderColumnHeaderDeltaListener()
+                    new DataGridViewRowHeaderPart.ColumnHeaderDeltaListener(provider)
                 ));
 
-            var columnHeader = new GridLayout<DataGridViewGridProvider, Provider.Headers.ColumnHeaderRowHeaderDeltaListener, Provider.Headers.ColumnHeaderColumnHeaderDeltaListener>(
-                new GridHeader<Provider.Headers.ColumnHeaderRowHeaderDeltaListener>(
+            var columnHeader = new ColumnHeaderLayout(
+                new GridHeader<DataGridViewColumnHeaderPart.RowHeaderDeltaListener>(
                     chrh,
                     new SingletonElementKeyInterner(chrh),
-                    new Provider.Headers.ColumnHeaderRowHeaderDeltaListener()
+                    new DataGridViewColumnHeaderPart.RowHeaderDeltaListener(provider)
                 ),
-                new GridHeader<Provider.Headers.ColumnHeaderColumnHeaderDeltaListener>(
+                new GridHeader<DataGridViewColumnHeaderPart.ColumnHeaderDeltaListener>(
                     chch,
                     new DataGridViewColumnElementKeyInterner(provider),
-                    new Provider.Headers.ColumnHeaderColumnHeaderDeltaListener(provider)
+                    new DataGridViewColumnHeaderPart.ColumnHeaderDeltaListener(provider)
                 ));
 
             _layout = SpreadLayout.Create(
@@ -92,7 +102,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
             _deleteButtonColumn = l.AddColumn("KEY_DELETE_BUTTON_COLUMN");
             l.Patch();
 
-            var a = new AttributeBuilder(SpreadPart.ColumnHeader, _provider);
+            var a = new AttributeBuilder(_provider, _provider.ColumnHeader);
             a.At(row, _checkBoxColumn)
                 .AddText("選択");
 
@@ -125,7 +135,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
             AttributeBuilder a;
             if (!_items.TryGetValue(item, out a))
             {
-                a = new AttributeBuilder(SpreadPart.Body, _provider);
+                a = new AttributeBuilder(_provider, _provider.Body);
                 _items.Add(item, a);
                 a.Attach();
             }
@@ -162,7 +172,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
 
         private void RenderFooterRow()
         {
-            var footer = new AttributeBuilder(SpreadPart.Body, _provider);
+            var footer = new AttributeBuilder(_provider, _provider.Body);
             footer.Attach();
 
             footer.At(_footerRow, _textColumn)

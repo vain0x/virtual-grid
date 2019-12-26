@@ -1,4 +1,4 @@
-﻿using System.Windows.Forms;
+using System.Windows.Forms;
 
 namespace VirtualGrid.WinFormsDemo
 {
@@ -23,10 +23,10 @@ namespace VirtualGrid.WinFormsDemo
 
         public object TryGetKey(int index)
         {
-            if ((uint)index >= _provider._inner.Rows.Count)
+            if ((uint)index >= _provider._dataGridView.Rows.Count)
                 return null;
 
-            return _provider._inner.Rows[index].Tag;
+            return _provider._dataGridView.Rows[index].Tag;
         }
     }
 }

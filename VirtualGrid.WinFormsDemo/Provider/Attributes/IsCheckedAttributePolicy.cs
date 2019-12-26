@@ -8,13 +8,6 @@ namespace VirtualGrid.WinFormsDemo
     public struct IsCheckedAttributePolicy
         : IDataAttributePolicy<bool>
     {
-        private readonly DataGridViewGridProvider _provider;
-
-        public IsCheckedAttributePolicy(DataGridViewGridProvider provider)
-        {
-            _provider = provider;
-        }
-
         public bool DefaultValue
         {
             get
@@ -23,12 +16,8 @@ namespace VirtualGrid.WinFormsDemo
             }
         }
 
-        public void OnChange(SpreadElementKey elementKey, SpreadLocation location, bool oldValue, bool newValue)
+        public void OnChange(DataGridViewCell cell, bool oldValue, bool newValue)
         {
-            DataGridViewCell cell;
-            if (!_provider._inner.GetCell(location, out cell))
-                return;
-
             cell.Value = newValue ? "[x]" : "[ ]";
         }
     }
