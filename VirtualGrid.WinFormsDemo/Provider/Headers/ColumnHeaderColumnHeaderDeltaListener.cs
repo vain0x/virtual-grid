@@ -19,7 +19,7 @@ namespace VirtualGrid.WinFormsDemo.Provider.Headers
             _provider = provider;
         }
 
-        public void OnInsert(object elementKey, int index)
+        public void OnInsert(int index, object elementKey)
         {
             Debug.Assert(elementKey != null);
 

@@ -11,7 +11,7 @@ namespace VirtualGrid.WinFormsDemo.Provider.Headers
     public struct RowHeaderColumnHeaderDeltaListener
         : IGridHeaderDeltaListener
     {
-        public void OnInsert(object elementKey, int index)
+        public void OnInsert(int index, object elementKey)
         {
             Debug.WriteLine("RowHeaderColumnHeader({0}) insert at ({1})", elementKey, index);
         }

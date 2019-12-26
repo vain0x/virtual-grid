@@ -147,7 +147,7 @@ namespace VirtualGrid.Headers
                     var node = _newKeys[ti].Create(offset + count);
                     if (node.IsLeaf)
                     {
-                        _listener.OnInsert(node.ElementKey, offset + count);
+                        _listener.OnInsert(offset + count, node.ElementKey);
                     }
                     count += node.TotalCount;
 

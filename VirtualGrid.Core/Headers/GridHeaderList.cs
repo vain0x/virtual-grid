@@ -99,7 +99,7 @@ namespace VirtualGrid.Headers
                 {
                     case GridHeaderDeltaKind.Insert:
                         TotalCount++;
-                        _listener.OnInsert(delta.ElementKey, offset + delta.Index);
+                        _listener.OnInsert(offset + delta.Index, delta.ElementKey);
                         continue;
 
                     case GridHeaderDeltaKind.Remove:
