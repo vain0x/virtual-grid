@@ -11,30 +11,6 @@ using VirtualGrid.Spreads;
 
 namespace VirtualGrid.WinFormsDemo.Examples
 {
-    public struct SingletonElementKeyInterner
-        : IElementKeyInterner
-    {
-        private readonly object _elementKey;
-
-        public SingletonElementKeyInterner(object elementKey)
-        {
-            _elementKey = elementKey;
-        }
-
-        public int? TryGetIndex(object elementKey)
-        {
-            if (!EqualityComparer<object>.Default.Equals(_elementKey, elementKey))
-                return null;
-
-            return 0;
-        }
-
-        public object TryGetKey(int index)
-        {
-            return _elementKey;
-        }
-    }
-
     public sealed class TodoListView
     {
         private readonly TodoListModel _model;
