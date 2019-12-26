@@ -69,7 +69,6 @@ namespace VirtualGrid.WinFormsDemo.Examples
             _addButtonColumn,
             _deleteButtonColumn;
 
-        // FIXME: キーが削除されたら detach する。
         private Dictionary<TodoItem, AttributeBuilder> _items =
             new Dictionary<TodoItem, AttributeBuilder>();
 
@@ -200,7 +199,16 @@ namespace VirtualGrid.WinFormsDemo.Examples
 
             foreach (var delta in _model._dirtyItems.ToArray())
             {
-                if (delta.Kind != "REMOVE")
+                if (delta.Kind == "REMOVE")
+                {
+                    AttributeBuilder a;
+                    if (_items.TryGetValue(delta.Item, out a))
+                    {
+                        a.Detach();
+                    }
+                    _items.Remove(delta.Item);
+                }
+                else
                 {
                     RenderItem(GridRow.From(delta.Item), delta.Item);
                 }
