@@ -8,7 +8,7 @@ namespace VirtualGrid.WinFormsDemo
     /// データ属性の実装を共通化するためのもの
     /// </summary>
     public sealed class GridDataAttributeProvider<T, TPolicy>
-        where TPolicy : struct, IDataAttributePolicy<T>
+        where TPolicy : IDataAttributePolicy<T>
     {
         private IDataGridViewPart _part;
 
@@ -87,7 +87,7 @@ namespace VirtualGrid.WinFormsDemo
     public static class GridDataAttributeProvider
     {
         public static GridDataAttributeProvider<T, TPolicy> Create<T, TPolicy>(IDataGridViewPart part, T _default, TPolicy policy)
-            where TPolicy : struct, IDataAttributePolicy<T>
+            where TPolicy : IDataAttributePolicy<T>
         {
             return new GridDataAttributeProvider<T, TPolicy>(part, policy);
         }

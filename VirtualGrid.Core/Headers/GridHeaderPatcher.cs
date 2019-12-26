@@ -6,13 +6,13 @@ using System.Linq;
 namespace VirtualGrid.Headers
 {
     public struct GridHeaderPatcher<TListener>
-        where TListener : struct, IGridHeaderDeltaListener
+        where TListener : IGridHeaderDeltaListener
     {
-        private readonly GridHeader<TListener> _oldElement;
+        private GridHeader<TListener> _oldElement;
 
-        private readonly GridHeaderBuilder<TListener> _newElement;
+        private GridHeaderBuilder<TListener> _newElement;
 
-        private readonly TListener _listener;
+        private TListener _listener;
 
         private List<GridHeaderNode> _oldKeys
         {

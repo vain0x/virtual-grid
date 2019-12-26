@@ -9,8 +9,8 @@ using VirtualGrid.Headers;
 namespace VirtualGrid.Layouts
 {
     public sealed class GridLayoutBuilder<TProvider, TRowHeaderDeltaListener, TColumnHeaderDeltaListener>
-        where TRowHeaderDeltaListener : struct, IGridHeaderDeltaListener
-        where TColumnHeaderDeltaListener : struct, IGridHeaderDeltaListener
+        where TRowHeaderDeltaListener : IGridHeaderDeltaListener
+        where TColumnHeaderDeltaListener : IGridHeaderDeltaListener
     {
         private GridLayout<TProvider, TRowHeaderDeltaListener, TColumnHeaderDeltaListener> _inner;
 

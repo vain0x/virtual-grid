@@ -3,8 +3,8 @@ using VirtualGrid.Headers;
 namespace VirtualGrid.Layouts
 {
     public sealed class GridLayout<TProvider, TRowHeaderDeltaListener, TColumnHeaderDeltaListener>
-        where TRowHeaderDeltaListener : struct, IGridHeaderDeltaListener
-        where TColumnHeaderDeltaListener : struct, IGridHeaderDeltaListener
+        where TRowHeaderDeltaListener : IGridHeaderDeltaListener
+        where TColumnHeaderDeltaListener : IGridHeaderDeltaListener
     {
         internal readonly GridHeader<TRowHeaderDeltaListener> _rowHeader;
 

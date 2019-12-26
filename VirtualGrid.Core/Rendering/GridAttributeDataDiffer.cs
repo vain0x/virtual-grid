@@ -5,9 +5,9 @@ namespace VirtualGrid.Rendering
     public struct GridAttributeDataDiffer<T, TListener>
         where TListener : IGridAttributeDeltaListener<T>
     {
-        private readonly GridAttributeData<T> _data;
+        private GridAttributeData<T> _data;
 
-        private readonly TListener _listener;
+        private TListener _listener;
 
         public GridAttributeDataDiffer(GridAttributeData<T> data, TListener listener)
         {
@@ -60,7 +60,7 @@ namespace VirtualGrid.Rendering
     public static class GridAttributeDataDiffer
     {
         public static GridAttributeDataDiffer<T, TListener> Create<T, TListener>(GridAttributeData<T> data, TListener listener)
-            where TListener : struct, IGridAttributeDeltaListener<T>
+            where TListener : IGridAttributeDeltaListener<T>
         {
             return new GridAttributeDataDiffer<T, TListener>(data, listener);
         }

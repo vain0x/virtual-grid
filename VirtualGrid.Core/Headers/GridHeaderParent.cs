@@ -10,7 +10,7 @@ namespace VirtualGrid.Headers
     public struct GridHeaderParent
         : IGridHeaderParent
     {
-        private readonly IGridHeaderParent _innerOpt;
+        private IGridHeaderParent _innerOpt;
 
         public GridHeaderParent(IGridHeaderParent innerOpt)
         {

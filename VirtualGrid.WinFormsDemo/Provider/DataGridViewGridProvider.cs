@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using VirtualGrid.Abstraction;
 using VirtualGrid.Layouts;
 using VirtualGrid.Rendering;
 using VirtualGrid.Spreads;
@@ -12,7 +11,6 @@ using VirtualGrid.Spreads;
 namespace VirtualGrid.WinFormsDemo
 {
     public sealed class DataGridViewGridProvider
-        : IGridProvider
     {
         internal readonly DataGridView _dataGridView;
 

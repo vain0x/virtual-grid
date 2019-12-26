@@ -41,7 +41,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Abstraction\GridProviderInterface.cs" />
     <Compile Include="ArrayTuple.cs" />
     <Compile Include="ColumnIndex.cs" />
     <Compile Include="ColumnMeasure.cs" />
@@ -85,7 +84,6 @@
     <Compile Include="RowIndex.cs" />
     <Compile Include="RowMeasure.cs" />
     <Compile Include="Spreads\SpreadLayout.cs" />
-    <Compile Include="Spreads\SpreadRenderContext.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

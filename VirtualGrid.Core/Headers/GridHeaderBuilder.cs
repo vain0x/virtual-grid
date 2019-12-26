@@ -6,7 +6,7 @@ namespace VirtualGrid.Headers
 {
     public sealed class GridHeaderBuilder<TListener>
         : IGridHeaderNode
-        where TListener : struct, IGridHeaderDeltaListener
+        where TListener : IGridHeaderDeltaListener
     {
         private GridHeader<TListener> _inner;
 

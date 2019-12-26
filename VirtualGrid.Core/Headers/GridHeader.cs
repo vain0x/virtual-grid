@@ -10,7 +10,7 @@ namespace VirtualGrid.Headers
     public sealed class GridHeader<TListener>
         : IGridHeaderParent
         , IGridHeaderNode
-        where TListener : struct, IGridHeaderDeltaListener
+        where TListener : IGridHeaderDeltaListener
     {
         internal List<GridHeaderNode> Keys =
             new List<GridHeaderNode>();
@@ -20,7 +20,7 @@ namespace VirtualGrid.Headers
 
         internal GridHeaderBuilder<TListener> _builder;
 
-        internal readonly TListener Listener;
+        internal TListener Listener;
 
         public object ElementKey { get; private set; }
 
