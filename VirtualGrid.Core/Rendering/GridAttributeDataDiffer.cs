@@ -7,7 +7,7 @@ namespace VirtualGrid.Rendering
     {
         private readonly GridAttributeData<T> _data;
 
-        private readonly IGridAttributeDeltaListener<T> _listener;
+        private readonly TListener _listener;
 
         public GridAttributeDataDiffer(GridAttributeData<T> data, TListener listener)
         {
