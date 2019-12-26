@@ -25,12 +25,9 @@ namespace VirtualGrid.Rendering
         private Dictionary<GridElementKey, T> _new =
             new Dictionary<GridElementKey, T>();
 
-        private readonly HashSet<GridElementKey> _newKeys =
-            new HashSet<GridElementKey>();
-
         public readonly T DefaultValue;
 
-        public IEnumerable<GridElementKey> OldKeys
+        public Dictionary<GridElementKey, T>.KeyCollection OldKeys
         {
             get
             {
@@ -38,13 +35,7 @@ namespace VirtualGrid.Rendering
             }
         }
 
-        public IEnumerable<GridElementKey> NewKeys
-        {
-            get
-            {
-                return _newKeys;
-            }
-        }
+        public readonly HashSet<GridElementKey> NewKeys = new HashSet<GridElementKey>();
 
         public GridAttributeData(T defaultValue)
         {
@@ -57,13 +48,13 @@ namespace VirtualGrid.Rendering
 
             if (!_old.ContainsKey(elementKey))
             {
-                _newKeys.Add(elementKey);
+                NewKeys.Add(elementKey);
             }
         }
 
         public bool IsAttached(GridElementKey elementKey)
         {
-            return _old.ContainsKey(elementKey) || _newKeys.Contains(elementKey);
+            return _old.ContainsKey(elementKey) || NewKeys.Contains(elementKey);
         }
 
         public T GetOldValue(GridElementKey elementKey)
@@ -108,7 +99,7 @@ namespace VirtualGrid.Rendering
             _new = t;
 
             _new.Clear();
-            _newKeys.Clear();
+            NewKeys.Clear();
         }
     }
 }
