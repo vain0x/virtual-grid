@@ -123,42 +123,42 @@ namespace VirtualGrid.WinFormsDemo.Examples
 
         private void RenderItem(GridRow row, TodoItem item)
         {
-            AttributeBuilder _body;
-            if (!_items.TryGetValue(item, out _body))
+            AttributeBuilder a;
+            if (!_items.TryGetValue(item, out a))
             {
-                _body = new AttributeBuilder(SpreadPart.Body, _provider);
-                _items.Add(item, _body);
-                _body.Attach();
+                a = new AttributeBuilder(SpreadPart.Body, _provider);
+                _items.Add(item, a);
+                a.Attach();
             }
 
-            _body.At(row, _checkBoxColumn)
+            a.At(row, _checkBoxColumn)
                 .AddCheckBox(item.IsDone)
                 .OnCheckChanged(isDone =>
                 {
                     _model.SetIsDone(item, isDone);
                 });
 
-            _body.At(row, _textColumn)
+            a.At(row, _textColumn)
                 .AddEdit(item.Text)
                 .OnTextChanged(text =>
                 {
                     _model.SetItemText(item, text);
                 });
 
-            _body.At(row, _addButtonColumn)
+            a.At(row, _addButtonColumn)
                 .AddButton("上に追加")
                 .OnClick(() =>
                 {
                     _model.InsertBefore(item);
                 });
 
-            _body.At(row, _deleteButtonColumn)
+            a.At(row, _deleteButtonColumn)
                 .AddButton("削除")
                 .OnClick(() =>
                 {
                     _model.Remove(item);
                 });
-            _body.Patch();
+            a.Patch();
         }
 
         private void RenderFooterRow()
