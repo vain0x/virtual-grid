@@ -57,16 +57,6 @@ namespace VirtualGrid.Headers
             _diff.Add(GridHeaderDelta.NewRemove(index));
         }
 
-        public bool Remove(object elementKey)
-        {
-            var indexOpt = _inner.TryGetIndex(elementKey);
-            if (!indexOpt.HasValue)
-                return false;
-
-            RemoveAt(indexOpt.Value);
-            return true;
-        }
-
         public void Clear()
         {
             _diff.Clear();

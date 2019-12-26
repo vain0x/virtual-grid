@@ -42,24 +42,20 @@ namespace VirtualGrid.WinFormsDemo.Examples
             var rowHeader = new RowHeaderLayout(
                 new GridHeader<DataGridViewRowHeaderPart.RowHeaderDeltaListener>(
                     rhrh,
-                    new DataGridViewRowElementKeyInterner(provider),
                     new DataGridViewRowHeaderPart.RowHeaderDeltaListener(provider)
                 ),
                 new GridHeader<DataGridViewRowHeaderPart.ColumnHeaderDeltaListener>(
                     rhch,
-                    new SingletonElementKeyInterner(rhch),
                     new DataGridViewRowHeaderPart.ColumnHeaderDeltaListener(provider)
                 ));
 
             var columnHeader = new ColumnHeaderLayout(
                 new GridHeader<DataGridViewColumnHeaderPart.RowHeaderDeltaListener>(
                     chrh,
-                    new SingletonElementKeyInterner(chrh),
                     new DataGridViewColumnHeaderPart.RowHeaderDeltaListener(provider)
                 ),
                 new GridHeader<DataGridViewColumnHeaderPart.ColumnHeaderDeltaListener>(
                     chch,
-                    new DataGridViewColumnElementKeyInterner(provider),
                     new DataGridViewColumnHeaderPart.ColumnHeaderDeltaListener(provider)
                 ));
 
@@ -198,7 +194,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
                 }
                 else if (delta.Kind == "REMOVE")
                 {
-                    itemRows.Remove(delta.Item);
+                    itemRows.RemoveAt(delta.Index);
                 }
                 else
                 {

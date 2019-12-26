@@ -13,8 +13,6 @@ namespace VirtualGrid.Headers
 
         public object ElementKey { get; private set; }
 
-        private IElementKeyInterner _interner;
-
         private IGridHeaderDeltaListener _listener;
 
         public bool IsDirty { get; private set; }
@@ -25,40 +23,12 @@ namespace VirtualGrid.Headers
 
         private GridHeaderListBuilder _builder;
 
-        public GridHeaderList(object elementKey, IElementKeyInterner interner, IGridHeaderDeltaListener listener)
+        public GridHeaderList(object elementKey, IGridHeaderDeltaListener listener)
         {
             ElementKey = elementKey;
-            _interner = interner;
             _listener = listener;
 
             _builder = new GridHeaderListBuilder(this);
-        }
-
-        public int? TryGetIndex(object elementKey)
-        {
-            if (IsDirty)
-            {
-                _parent.UpdateChildren();
-            }
-
-            var indexOpt = _interner.TryGetIndex(elementKey);
-            if (!(indexOpt.HasValue && Offset <= indexOpt.Value && indexOpt.Value < Offset + TotalCount))
-                return null;
-
-            return indexOpt.Value - Offset;
-        }
-
-        public object TryGetKey(int index)
-        {
-            if (IsDirty)
-            {
-                _parent.UpdateChildren();
-            }
-
-            if (!(0 <= index && index < TotalCount))
-                return null;
-
-            return _interner.TryGetKey(index + Offset);
         }
 
         public GridHeaderListBuilder GetBuilder()

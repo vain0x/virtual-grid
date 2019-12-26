@@ -67,7 +67,7 @@ namespace VirtualGrid.Headers
 
         public GridHeaderList AddList(object elementKey)
         {
-            var list = new GridHeaderList(elementKey, _inner.Interner, _inner.Listener);
+            var list = new GridHeaderList(elementKey, _inner.Listener);
             AddNode(list);
             return list;
         }

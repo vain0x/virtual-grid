@@ -55,11 +55,9 @@
     <Compile Include="Headers\GridHeaderListBuilder.cs" />
     <Compile Include="Headers\GridHeaderNode.cs" />
     <Compile Include="Headers\GridHeaderParent.cs" />
-    <Compile Include="ElementKeyInternerInterface.cs" />
     <Compile Include="Layouts\GridColumn.cs" />
     <Compile Include="Layouts\GridLayout.cs" />
     <Compile Include="Layouts\GridRow.cs" />
-    <Compile Include="SingletonElementKeyInterner.cs" />
     <Compile Include="Spreads\SpreadElementKey.cs" />
     <Compile Include="Spreads\SpreadLocation.cs" />
     <Compile Include="Spreads\SpreadPart.cs" />

@@ -20,9 +20,6 @@ namespace VirtualGrid.Headers
 
         internal GridHeaderBuilder<TListener> _builder;
 
-        // FIXME: デメテル違反
-        internal readonly IElementKeyInterner Interner;
-
         internal readonly TListener Listener;
 
         public object ElementKey { get; private set; }
@@ -33,10 +30,9 @@ namespace VirtualGrid.Headers
 
         public int TotalCount { get; private set; }
 
-        public GridHeader(object elementKey, IElementKeyInterner interner, TListener listener)
+        public GridHeader(object elementKey, TListener listener)
         {
             ElementKey = elementKey;
-            Interner = interner;
             Listener = listener;
 
             _builder = new GridHeaderBuilder<TListener>(this);
