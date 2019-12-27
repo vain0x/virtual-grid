@@ -75,9 +75,6 @@ namespace VirtualGrid.WinFormsDemo.Examples
             _addButtonColumn,
             _deleteButtonColumn;
 
-        private Dictionary<TodoItem, AttributeBuilder> _items =
-            new Dictionary<TodoItem, AttributeBuilder>();
-
         public void Initialize()
         {
             InitializeColumnHeader();
@@ -128,13 +125,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
 
         private void RenderItem(GridRow row, TodoItem item)
         {
-            AttributeBuilder a;
-            if (!_items.TryGetValue(item, out a))
-            {
-                a = new AttributeBuilder(_provider, _provider.Body);
-                _items.Add(item, a);
-                a.Attach();
-            }
+            var a = TouchElement(item);
 
             a.At(row, _checkBoxColumn)
                 .AddCheckBox(item.IsDone)
@@ -183,6 +174,36 @@ namespace VirtualGrid.WinFormsDemo.Examples
             footer.Patch();
         }
 
+        #region items
+
+        private Dictionary<TodoItem, AttributeBuilder> _items =
+            new Dictionary<TodoItem, AttributeBuilder>();
+
+        private AttributeBuilder TouchElement(TodoItem item)
+        {
+            AttributeBuilder a;
+            if (!_items.TryGetValue(item, out a))
+            {
+                a = new AttributeBuilder(_provider, _provider.Body);
+                _items.Add(item, a);
+                a.Attach();
+            }
+
+            return a;
+        }
+
+        private void DestroyElement(TodoItem item)
+        {
+            AttributeBuilder a;
+            if (_items.TryGetValue(item, out a))
+            {
+                a.Detach();
+            }
+            _items.Remove(item);
+        }
+
+        #endregion
+
         private void UpdateItems()
         {
             var itemRows = _itemRows.GetBuilder();
@@ -207,12 +228,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
             {
                 if (delta.Kind == "REMOVE")
                 {
-                    AttributeBuilder a;
-                    if (_items.TryGetValue(delta.Item, out a))
-                    {
-                        a.Detach();
-                    }
-                    _items.Remove(delta.Item);
+                    DestroyElement(delta.Item);
                 }
                 else
                 {
