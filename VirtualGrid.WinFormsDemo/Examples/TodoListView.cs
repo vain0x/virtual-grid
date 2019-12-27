@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using VirtualGrid.Headers;
 using VirtualGrid.Layouts;
 using VirtualGrid.Rendering;
@@ -18,7 +19,6 @@ using ColumnHeaderLayout = VirtualGrid.Layouts.GridLayout<
     VirtualGrid.WinFormsDemo.DataGridViewColumnHeaderPart.RowHeaderDeltaListener,
     VirtualGrid.WinFormsDemo.DataGridViewColumnHeaderPart.ColumnHeaderDeltaListener
 >;
-using System.Windows.Forms;
 
 namespace VirtualGrid.WinFormsDemo.Examples
 {
@@ -36,7 +36,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
         {
             _model = model;
 
-            _bodyElement = new GridRowsElement<object, DataGridViewElement>();
+            _bodyElement = new GridRowsElement<object, DataGridViewElement>(rowHeader);
 
             _provider = new DataGridViewGridProvider(dataGridView, _bodyElement, dispatch);
 
@@ -129,9 +129,9 @@ namespace VirtualGrid.WinFormsDemo.Examples
             RenderFooterRow();
         }
 
-        private void RenderItem(GridRow row, TodoItem item)
+        private void RenderItem(TodoItem item, AttributeBuilder a)
         {
-            var a = TouchElement(item);
+            var row = GridRow.From(item);
 
             a.At(row, _checkBoxColumn)
                 .AddCheckBox(item.IsDone)
@@ -160,7 +160,6 @@ namespace VirtualGrid.WinFormsDemo.Examples
                 {
                     _model.Remove(item);
                 });
-            a.Patch();
         }
 
         private void RenderFooterRow()
@@ -247,5 +246,40 @@ namespace VirtualGrid.WinFormsDemo.Examples
         {
             UpdateItems();
         }
+
+        public sealed class TodoItemElementProvider
+            : IGridElementProvider<TodoItem, DataGridViewElement>
+        {
+            private TodoListView _view;
+
+            public DataGridViewElement Create(TodoItem key)
+            {
+                return new DataGridViewElement(
+                    GridElementKey.Create(key, _view._checkBoxColumn),
+                    new AttributeBuilder(_view._provider.Body)
+                );
+            }
+
+            public void Update(TodoItem key, DataGridViewElement item)
+            {
+                _view.RenderItem(key, item.Attributes);
+                item.Attributes.Patch();
+            }
+
+            public void Destroy(TodoItem key, DataGridViewElement item)
+            {
+                item.Attributes.Patch();
+                item.Attributes.Patch();
+            }
+        }
+    }
+
+    public interface IGridElementProvider<TKey, T>
+    {
+        T Create(TKey key);
+
+        void Update(TKey key, T item);
+
+        void Destroy(TKey key, T item);
     }
 }

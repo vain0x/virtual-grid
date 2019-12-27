@@ -49,21 +49,19 @@ namespace VirtualGrid.WinFormsDemo
 
         private readonly Dictionary<object, TElement> _children;
 
-        private readonly Dictionary<object, GridAttributeDeltaKind> _changes = new Dictionary<object, GridAttributeDeltaKind>();
+        private readonly Dictionary<object, GridAttributeDeltaKind> _changes =
+            new Dictionary<object, GridAttributeDeltaKind>();
 
         private readonly Func<object, TElement> _creator;
 
-        private readonly Action<object, TElement> _destroyer;
-
         private readonly Action<object, TElement> _patch;
+
+        private readonly Action<object, TElement> _destroyer;
 
         private readonly Func<int, object> _getRowKey;
 
-        private readonly Func<int, object> _getColumnKey;
-
-        public GridRowsElement(object elementKey, TListener listener)
+        public GridRowsElement()
         {
-            RowHeader = new GridHeaderList(elementKey, new DeltaListener(this, listener));
         }
 
         public GridHeaderListBuilder GetBuilder()
@@ -74,14 +72,14 @@ namespace VirtualGrid.WinFormsDemo
         public GridElementHitResult<TElement>? Hit(GridVector index)
         {
             var rowKey = _getRowKey(index.Row.Row + RowHeader.Offset);
-            var columnKey = _getColumnKey(index.Column.Column);
+            var columnKey = "KEY_COLUMN_HEADER"; // FIXME: ?
             var elementKey = GridElementKey.Create(rowKey, columnKey);
 
             TElement element;
             if (!_children.TryGetValue(rowKey, out element))
                 return null;
 
-            return GridElementHitResult.Create(index.Column.AsVector, elementKey, element);
+            return GridElementHitResult.Create(GridVector.Zero, elementKey, element);
         }
 
         public void Patch()
@@ -126,23 +124,18 @@ namespace VirtualGrid.WinFormsDemo
             }
         }
 
-        public struct DeltaListener
+        public struct RowHeaderDeltaListener
             : IGridHeaderDeltaListener
         {
             private GridRowsElement<TElement, TListener> _parent;
 
-            private TListener _listener;
-
-            public DeltaListener(GridRowsElement<TElement, TListener> parent, TListener listener)
+            public RowHeaderDeltaListener(GridRowsElement<TElement, TListener> parent)
             {
                 _parent = parent;
-                _listener = listener;
             }
 
             public void OnInsert(int index, object elementKey)
             {
-                _listener.OnInsert(index, elementKey);
-
                 var rowKey = elementKey;
                 _parent._changes[rowKey] = GridAttributeDeltaKind.Add;
             }
@@ -150,8 +143,6 @@ namespace VirtualGrid.WinFormsDemo
             public void OnRemove(int index)
             {
                 var rowKey = _parent._getRowKey(index);
-
-                _listener.OnRemove(index);
                 _parent._changes[rowKey] = GridAttributeDeltaKind.Remove;
             }
         }
@@ -163,6 +154,12 @@ namespace VirtualGrid.WinFormsDemo
         public readonly GridElementKey Key;
 
         public readonly AttributeBuilder Attributes;
+
+        public DataGridViewElement(GridElementKey key, AttributeBuilder attributes)
+        {
+            Key = key;
+            Attributes = attributes;
+        }
 
         public GridElementHitResult<DataGridViewElement>? Hit(GridVector index)
         {
