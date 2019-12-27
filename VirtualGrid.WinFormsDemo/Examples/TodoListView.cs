@@ -30,15 +30,15 @@ namespace VirtualGrid.WinFormsDemo.Examples
 
         private readonly SpreadLayout<RowHeaderLayout, ColumnHeaderLayout> _layout;
 
-        private readonly GridVerticalStackElement _rows;
+        private readonly GridRowElementsComponent _body;
 
         public TodoListView(TodoListModel model, DataGridView dataGridView, Action<GridElementKey, Action> dispatch)
         {
             _model = model;
 
-            _rows = new GridVerticalStackElement();
+            _body = new GridRowElementsComponent();
 
-            _provider = new DataGridViewGridProvider(dataGridView, _rows, dispatch);
+            _provider = new DataGridViewGridProvider(dataGridView, _body, dispatch);
 
             var rhrh = "KEY_SPREAD_ROW_HEADER_ROW_HEADER";
             var rhch = "KEY_SPREAD_ROW_HEADER_COLUMN_HEADER";
@@ -71,7 +71,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
             );
         }
 
-        private GridHeaderList _itemRows;
+        private GridRowElementsComponent _itemRows;
 
         private GridRow _footerRow;
 
@@ -122,11 +122,13 @@ namespace VirtualGrid.WinFormsDemo.Examples
             //_footerRow = l.AddRow("KEY_FOOTER_ROW");
             //l.Patch();
 
-            _rows.Add("KEY_ITEM_ROWS", (item, row) => RenderItem((TodoItem)item, row));
-            _rows.Add("KEY_FOOTER_ROW", (_key, row) => RenderFooter(row));
+            var rowElements = _body.GetBuilder();
+            rowElements.AddRowList("KEY_ITEM_ROWS", (item, row) => RenderItem((TodoItem)item, row));
+            rowElements.AddRow("KEY_FOOTER_ROW", (_key, row) => RenderFooter(row));
+            rowElements.Patch();
         }
 
-        private void RenderItem(TodoItem item, GridRowElement row)
+        private void RenderItem(TodoItem item, DataGridViewRowElement row)
         {
             row.At(_checkBoxColumn)
                 .AddCheckBox(item.IsDone)
@@ -157,7 +159,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
                 });
         }
 
-        private void RenderFooter(GridRowElement footer)
+        private void RenderFooter(DataGridViewRowElement footer)
         {
             footer.At(_textColumn)
                 .AddText("");
@@ -175,7 +177,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
             var dirtyItems = _model._dirtyItems.ToArray();
             _model._dirtyItems.Clear();
 
-            var rows = _rows.GetBuilder();
+            var rows = _itemRows.GetBuilder();
             foreach (var delta in dirtyItems)
             {
                 if (delta.Kind == "INSERT")

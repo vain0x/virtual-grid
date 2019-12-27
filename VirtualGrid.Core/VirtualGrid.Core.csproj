@@ -50,6 +50,7 @@
     <Compile Include="Headers\GridHeaderBuilder.cs" />
     <Compile Include="Headers\GridHeaderDelta.cs" />
     <Compile Include="Headers\GridHeaderDeltaKind.cs" />
+    <Compile Include="Headers\GridHeaderHitResult.cs" />
     <Compile Include="Headers\GridHeaderList.cs" />
     <Compile Include="Headers\GridHeaderListBuilder.cs" />
     <Compile Include="Headers\GridHeaderNode.cs" />

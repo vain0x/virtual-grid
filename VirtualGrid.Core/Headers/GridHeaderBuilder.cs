@@ -97,5 +97,10 @@ namespace VirtualGrid.Headers
         {
             _inner.Patch(offset);
         }
+
+        public GridHeaderHitResult? Hit(int index)
+        {
+            return _inner.Hit(index);
+        }
     }
 }

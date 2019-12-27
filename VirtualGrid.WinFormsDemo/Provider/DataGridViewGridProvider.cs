@@ -12,7 +12,7 @@ using VirtualGrid.Spreads;
 
 namespace VirtualGrid.WinFormsDemo
 {
-    public sealed class GridRowElement
+    public sealed class DataGridViewRowElement
     {
         public IGridCellAdder<AttributeBuilder> At(GridColumn column)
         {
@@ -20,17 +20,73 @@ namespace VirtualGrid.WinFormsDemo
         }
     }
 
-    public sealed class GridVerticalStackElement
-        : IGridElement<DataGridViewElementData>
+    public sealed class GridRowElementsComponent
+        : IGridElementResolver<DataGridViewElementData>
     {
-        public GridElementHitResult<DataGridViewElementData>? Hit(GridVector index)
+        private GridHeader<IGridHeaderDeltaListener> _rowHeader;
+
+        private Dictionary<object, AttributeBuilder> _items;
+
+        public DataGridViewElementData? Hit(GridVector index, GridElementKey elementKey)
         {
-            throw new NotImplementedException();
+            var rowKey = elementKey.RowElementKey;
+
+            AttributeBuilder data;
+            if (!_items.TryGetValue(rowKey, out data))
+                return null;
+
+            return new DataGridViewElementData(elementKey, data);
         }
 
-        internal void Add(object itemRows, Action<object, GridRowElement> row)
+        public RowHeaderBuilder GetBuilder()
         {
-            throw new NotImplementedException();
+            return new RowHeaderBuilder(_rowHeader.GetBuilder());
+        }
+
+        public struct RowHeaderBuilder
+        {
+            private GridHeaderBuilder<IGridHeaderDeltaListener> _rowHeader;
+
+            public RowHeaderBuilder(GridHeaderBuilder<IGridHeaderDeltaListener> rowHeader)
+            {
+                _rowHeader = rowHeader;
+            }
+
+            public void AddRow(object rowKey, Action<object, DataGridViewRowElement> render)
+            {
+                _rowHeader.Add(rowKey);
+            }
+
+            public void AddRowList(object rowListKey, Action<object, DataGridViewRowElement> render)
+            {
+                _rowHeader.AddNode(new GridHeaderList(rowListKey, default(IGridHeaderDeltaListener)));
+            }
+
+            public void Patch()
+            {
+                _rowHeader.Patch(0);
+            }
+        }
+
+        public struct RowListDeltaListener
+            : IGridHeaderDeltaListener
+        {
+            private GridRowElementsComponent _parent;
+
+            public RowListDeltaListener(GridRowElementsComponent parent)
+            {
+                _parent = parent;
+            }
+
+            public void OnInsert(int index, object elementKey)
+            {
+
+            }
+
+            public void OnRemove(int index)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 
@@ -55,14 +111,15 @@ namespace VirtualGrid.WinFormsDemo
         }
     }
 
-    public interface IGridElement<T>
+    public interface IGridElementResolver<T>
+        where T : struct
     {
-        GridElementHitResult<T>? Hit(GridVector index);
+        T? Hit(GridVector index, GridElementKey key);
     }
 
     // 列全体といくつかの行を占有する要素
     public sealed class GridRowsElement<TElement, TListener>
-        : IGridElement<TElement>
+        : IGridElementResolver<TElement>
         where TListener : IGridHeaderDeltaListener
     {
         public readonly GridHeaderList RowHeader;
@@ -167,7 +224,7 @@ namespace VirtualGrid.WinFormsDemo
     }
 
     public struct DataGridViewElementData
-        : IGridElement<DataGridViewElementData>
+        : IGridElementResolver<DataGridViewElementData>
     {
         public readonly GridElementKey Key;
 
@@ -211,9 +268,9 @@ namespace VirtualGrid.WinFormsDemo
 
         public DataGridViewBodyPart Body;
 
-        private IGridElement<DataGridViewElementData> _bodyElement;
+        private IGridElementResolver<DataGridViewElementData> _bodyElement;
 
-        public DataGridViewGridProvider(DataGridView inner, IGridElement<DataGridViewElementData> bodyElement, Action<GridElementKey, Action> dispatch)
+        public DataGridViewGridProvider(DataGridView inner, IGridElementResolver<DataGridViewElementData> bodyElement, Action<GridElementKey, Action> dispatch)
         {
             _dataGridView = inner;
 
@@ -246,7 +303,7 @@ namespace VirtualGrid.WinFormsDemo
             _dataGridView.CellValueChanged -= OnCellValueChanged;
         }
 
-        private void OnCellClickCore(IGridElement<DataGridViewElementData> element, GridVector index)
+        private void OnCellClickCore(IGridElementResolver<DataGridViewElementData> element, GridVector index)
         {
             var hitOpt = element.Hit(index);
             if (!hitOpt.HasValue)
@@ -288,7 +345,7 @@ namespace VirtualGrid.WinFormsDemo
             OnCellClickCore(_bodyElement, index);
         }
 
-        private void OnCellValueChangedCore(IGridElement<DataGridViewElementData> element, GridVector index, object value)
+        private void OnCellValueChangedCore(IGridElementResolver<DataGridViewElementData> element, GridVector index, object value)
         {
             var hitOpt = element.Hit(index);
             if (!hitOpt.HasValue)

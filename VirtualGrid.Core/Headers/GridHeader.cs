@@ -26,7 +26,14 @@ namespace VirtualGrid.Headers
 
         public bool IsDirty { get; private set; }
 
-        public int Offset { get; private set; }
+        public int Offset
+        {
+            get
+            {
+                // NOTE: 必ずルートであるため。
+                return 0;
+            }
+        }
 
         public int TotalCount { get; private set; }
 
@@ -43,10 +50,29 @@ namespace VirtualGrid.Headers
             return _builder;
         }
 
+        public GridHeaderHitResult? Hit(int index)
+        {
+            UpdateChildren();
+
+            index -= Offset;
+
+            foreach (var key in Keys)
+            {
+                if (index < 0)
+                    break;
+
+                if (index < key.TotalCount)
+                    return GridHeaderHitResult.Create(key, index);
+
+                index -= key.TotalCount;
+            }
+
+            return null;
+        }
+
         internal void Clear()
         {
             IsDirty = false;
-            Offset = 0;
             TotalCount = 0;
             Keys.Clear();
             KeyMap.Clear();
@@ -54,16 +80,13 @@ namespace VirtualGrid.Headers
 
         public void SetOffset(int offset)
         {
-            if (Offset != offset)
-            {
-                Offset = offset;
-                IsDirty = true;
-            }
+            // ルートであるため、オフセットが変更されることはない。
+            Debug.Assert(offset == 0);
         }
 
         public GridHeaderNode Create(int offset)
         {
-            Offset = offset;
+            Debug.Assert(offset == 0);
             return GridHeaderNode.NewNode(this);
         }
 
@@ -85,9 +108,10 @@ namespace VirtualGrid.Headers
 
         public void Patch(int offset)
         {
+            Debug.Assert(offset == 0);
+
             new GridHeaderPatcher<TListener>(this, _builder, Listener).Patch(offset);
 
-            Offset = offset;
             IsDirty = false;
             Swap(ref Keys, ref _builder.Keys);
             Swap(ref KeyMap, ref _builder.KeyMap);
@@ -113,7 +137,7 @@ namespace VirtualGrid.Headers
             if (!IsDirty)
                 return;
 
-            var offset = 0;
+            var offset = Offset;
 
             foreach (var key in Keys)
             {
