@@ -30,15 +30,15 @@ namespace VirtualGrid.WinFormsDemo.Examples
 
         private readonly SpreadLayout<RowHeaderLayout, ColumnHeaderLayout> _layout;
 
-        private readonly GridRowsElement<object, DataGridViewElement> _bodyElement;
+        private readonly GridVerticalStackElement _rows;
 
         public TodoListView(TodoListModel model, DataGridView dataGridView, Action<GridElementKey, Action> dispatch)
         {
             _model = model;
 
-            _bodyElement = new GridRowsElement<object, DataGridViewElement>(rowHeader);
+            _rows = new GridVerticalStackElement();
 
-            _provider = new DataGridViewGridProvider(dataGridView, _bodyElement, dispatch);
+            _provider = new DataGridViewGridProvider(dataGridView, _rows, dispatch);
 
             var rhrh = "KEY_SPREAD_ROW_HEADER_ROW_HEADER";
             var rhch = "KEY_SPREAD_ROW_HEADER_COLUMN_HEADER";
@@ -85,7 +85,6 @@ namespace VirtualGrid.WinFormsDemo.Examples
         {
             InitializeColumnHeader();
             InitializeRowHeader();
-            InitializeBody();
 
             Update();
         }
@@ -118,43 +117,39 @@ namespace VirtualGrid.WinFormsDemo.Examples
 
         private void InitializeRowHeader()
         {
-            var l = _layout.RowHeader.GetBuilder();
-            _itemRows = l.AddRowList("KEY_ITEM_ROWS");
-            _footerRow = l.AddRow("KEY_FOOTER_ROW");
-            l.Patch();
+            //var l = _layout.RowHeader.GetBuilder();
+            //_itemRows = l.AddRowList("KEY_ITEM_ROWS");
+            //_footerRow = l.AddRow("KEY_FOOTER_ROW");
+            //l.Patch();
+
+            _rows.Add("KEY_ITEM_ROWS", (item, row) => RenderItem((TodoItem)item, row));
+            _rows.Add("KEY_FOOTER_ROW", (_key, row) => RenderFooter(row));
         }
 
-        public void InitializeBody()
+        private void RenderItem(TodoItem item, GridRowElement row)
         {
-            RenderFooterRow();
-        }
-
-        private void RenderItem(TodoItem item, AttributeBuilder a)
-        {
-            var row = GridRow.From(item);
-
-            a.At(row, _checkBoxColumn)
+            row.At(_checkBoxColumn)
                 .AddCheckBox(item.IsDone)
                 .OnCheckChanged(isDone =>
                 {
                     _model.SetIsDone(item, isDone);
                 });
 
-            a.At(row, _textColumn)
+            row.At(_textColumn)
                 .AddEdit(item.Text)
                 .OnTextChanged(text =>
                 {
                     _model.SetItemText(item, text);
                 });
 
-            a.At(row, _addButtonColumn)
+            row.At(_addButtonColumn)
                 .AddButton("上に追加")
                 .OnClick(() =>
                 {
                     _model.InsertBefore(item);
                 });
 
-            a.At(row, _deleteButtonColumn)
+            row.At(_deleteButtonColumn)
                 .AddButton("削除")
                 .OnClick(() =>
                 {
@@ -162,124 +157,46 @@ namespace VirtualGrid.WinFormsDemo.Examples
                 });
         }
 
-        private void RenderFooterRow()
+        private void RenderFooter(GridRowElement footer)
         {
-            var footer = new AttributeBuilder(_provider.Body);
-            footer.At(_footerRow, _textColumn)
+            footer.At(_textColumn)
                 .AddText("");
 
-            footer.At(_footerRow, _addButtonColumn)
+            footer.At(_addButtonColumn)
                 .AddButton("上に追加")
                 .OnClick(() =>
                 {
                     _model.InsertLast();
                 });
-            footer.Patch();
         }
-
-        #region items
-
-        private Dictionary<TodoItem, AttributeBuilder> _items =
-            new Dictionary<TodoItem, AttributeBuilder>();
-
-        private AttributeBuilder TouchElement(TodoItem item)
-        {
-            AttributeBuilder a;
-            if (!_items.TryGetValue(item, out a))
-            {
-                a = new AttributeBuilder(_provider, _provider.Body);
-                _items.Add(item, a);
-                a.Attach();
-            }
-
-            return a;
-        }
-
-        private void DestroyElement(TodoItem item)
-        {
-            AttributeBuilder a;
-            if (_items.TryGetValue(item, out a))
-            {
-                a.Detach();
-            }
-            _items.Remove(item);
-        }
-
-        #endregion
 
         private void UpdateItems()
         {
-            var itemRows = _itemRows.GetBuilder();
-            foreach (var delta in _model._dirtyItems)
+            var dirtyItems = _model._dirtyItems.ToArray();
+            _model._dirtyItems.Clear();
+
+            var rows = _rows.GetBuilder();
+            foreach (var delta in dirtyItems)
             {
                 if (delta.Kind == "INSERT")
                 {
-                    itemRows.Insert(delta.Index, delta.Item);
+                    rows.Insert(delta.Index, delta.Item);
                 }
                 else if (delta.Kind == "REMOVE")
                 {
-                    itemRows.RemoveAt(delta.Index);
+                    rows.RemoveAt(delta.Index);
                 }
                 else
                 {
-                    // Pass.
+                    rows.Update(delta.Index, delta.Item);
                 }
             }
-            itemRows.Patch();
-
-            foreach (var delta in _model._dirtyItems.ToArray())
-            {
-                if (delta.Kind == "REMOVE")
-                {
-                    DestroyElement(delta.Item);
-                }
-                else
-                {
-                    RenderItem(GridRow.From(delta.Item), delta.Item);
-                }
-            }
-
-            _model._dirtyItems.Clear();
+            rows.Patch();
         }
 
         public void Update()
         {
             UpdateItems();
         }
-
-        public sealed class TodoItemElementProvider
-            : IGridElementProvider<TodoItem, DataGridViewElement>
-        {
-            private TodoListView _view;
-
-            public DataGridViewElement Create(TodoItem key)
-            {
-                return new DataGridViewElement(
-                    GridElementKey.Create(key, _view._checkBoxColumn),
-                    new AttributeBuilder(_view._provider.Body)
-                );
-            }
-
-            public void Update(TodoItem key, DataGridViewElement item)
-            {
-                _view.RenderItem(key, item.Attributes);
-                item.Attributes.Patch();
-            }
-
-            public void Destroy(TodoItem key, DataGridViewElement item)
-            {
-                item.Attributes.Patch();
-                item.Attributes.Patch();
-            }
-        }
-    }
-
-    public interface IGridElementProvider<TKey, T>
-    {
-        T Create(TKey key);
-
-        void Update(TKey key, T item);
-
-        void Destroy(TKey key, T item);
     }
 }

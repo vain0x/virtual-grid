@@ -12,27 +12,46 @@ using VirtualGrid.Spreads;
 
 namespace VirtualGrid.WinFormsDemo
 {
+    public sealed class GridRowElement
+    {
+        public IGridCellAdder<AttributeBuilder> At(GridColumn column)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public sealed class GridVerticalStackElement
+        : IGridElement<DataGridViewElementData>
+    {
+        public GridElementHitResult<DataGridViewElementData>? Hit(GridVector index)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void Add(object itemRows, Action<object, GridRowElement> row)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public struct GridElementHitResult<T>
     {
         public readonly GridVector Index;
 
-        public readonly GridElementKey Key;
+        public readonly T Data;
 
-        public readonly T Element;
-
-        public GridElementHitResult(GridVector index, GridElementKey key, T element)
+        public GridElementHitResult(GridVector index, T data)
         {
             Index = index;
-            Key = key;
-            Element = element;
+            Data = data;
         }
     }
 
     public static class GridElementHitResult
     {
-        public static GridElementHitResult<T> Create<T>(GridVector index, GridElementKey key, T element)
+        public static GridElementHitResult<T> Create<T>(GridVector index, T data)
         {
-            return new GridElementHitResult<T>(index, key, element);
+            return new GridElementHitResult<T>(index, data);
         }
     }
 
@@ -41,6 +60,7 @@ namespace VirtualGrid.WinFormsDemo
         GridElementHitResult<T>? Hit(GridVector index);
     }
 
+    // 列全体といくつかの行を占有する要素
     public sealed class GridRowsElement<TElement, TListener>
         : IGridElement<TElement>
         where TListener : IGridHeaderDeltaListener
@@ -72,14 +92,12 @@ namespace VirtualGrid.WinFormsDemo
         public GridElementHitResult<TElement>? Hit(GridVector index)
         {
             var rowKey = _getRowKey(index.Row.Row + RowHeader.Offset);
-            var columnKey = "KEY_COLUMN_HEADER"; // FIXME: ?
-            var elementKey = GridElementKey.Create(rowKey, columnKey);
 
             TElement element;
             if (!_children.TryGetValue(rowKey, out element))
                 return null;
 
-            return GridElementHitResult.Create(GridVector.Zero, elementKey, element);
+            return GridElementHitResult.Create(GridVector.Zero, element);
         }
 
         public void Patch()
@@ -148,20 +166,20 @@ namespace VirtualGrid.WinFormsDemo
         }
     }
 
-    public struct DataGridViewElement
-        : IGridElement<DataGridViewElement>
+    public struct DataGridViewElementData
+        : IGridElement<DataGridViewElementData>
     {
         public readonly GridElementKey Key;
 
         public readonly AttributeBuilder Attributes;
 
-        public DataGridViewElement(GridElementKey key, AttributeBuilder attributes)
+        public DataGridViewElementData(GridElementKey key, AttributeBuilder attributes)
         {
             Key = key;
             Attributes = attributes;
         }
 
-        public GridElementHitResult<DataGridViewElement>? Hit(GridVector index)
+        public GridElementHitResult<DataGridViewElementData>? Hit(GridVector index)
         {
             return null;
         }
@@ -169,7 +187,6 @@ namespace VirtualGrid.WinFormsDemo
 
     public sealed class GridElementProvider
     {
-        Dictionary<GridElementKey, AttributeBuilder> _map;
     }
 
     public sealed class DataGridViewGridProvider
@@ -194,9 +211,9 @@ namespace VirtualGrid.WinFormsDemo
 
         public DataGridViewBodyPart Body;
 
-        private IGridElement<DataGridViewElement> _bodyElement;
+        private IGridElement<DataGridViewElementData> _bodyElement;
 
-        public DataGridViewGridProvider(DataGridView inner, IGridElement<DataGridViewElement> bodyElement, Action<GridElementKey, Action> dispatch)
+        public DataGridViewGridProvider(DataGridView inner, IGridElement<DataGridViewElementData> bodyElement, Action<GridElementKey, Action> dispatch)
         {
             _dataGridView = inner;
 
@@ -229,39 +246,33 @@ namespace VirtualGrid.WinFormsDemo
             _dataGridView.CellValueChanged -= OnCellValueChanged;
         }
 
-        private void OnCellClickCore(IGridElement<DataGridViewElement> element, GridVector index)
+        private void OnCellClickCore(IGridElement<DataGridViewElementData> element, GridVector index)
         {
-            while (true)
+            var hitOpt = element.Hit(index);
+            if (!hitOpt.HasValue)
+                return;
+
+            var elementKey = hitOpt.Value.Data.Key;
+            var attributes = hitOpt.Value.Data.Attributes;
+
+            // チェックボックスのチェックを実装する。
+            // FIXME: セルタイプを見る。
+            if (attributes.IsCheckedAttribute.IsAttached(elementKey))
             {
-                var hitOpt = element.Hit(index);
-                if (!hitOpt.HasValue)
-                    return;
-
-                var elementKey = hitOpt.Value.Key;
-                var attributes = hitOpt.Value.Element.Attributes;
-
-                // チェックボックスのチェックを実装する。
-                // FIXME: セルタイプを見る。
-                if (attributes.IsCheckedAttribute.IsAttached(elementKey))
+                var isChecked = attributes.IsCheckedAttribute.GetValue(elementKey);
+                var action = attributes.OnCheckChangedAttribute.GetValue(elementKey);
+                if (action != null)
                 {
-                    var isChecked = attributes.IsCheckedAttribute.GetValue(elementKey);
-                    var action = attributes.OnCheckChangedAttribute.GetValue(elementKey);
-                    if (action != null)
-                    {
-                        _dispatch(elementKey, () => action(!isChecked));
-                    }
+                    _dispatch(elementKey, () => action(!isChecked));
                 }
+            }
 
+            {
+                var action = attributes.OnClickAttribute.GetValue(elementKey);
+                if (action != null)
                 {
-                    var action = attributes.OnClickAttribute.GetValue(elementKey);
-                    if (action != null)
-                    {
-                        _dispatch(elementKey, action);
-                    }
+                    _dispatch(elementKey, action);
                 }
-
-                element = hitOpt.Value.Element;
-                index = hitOpt.Value.Index;
             }
         }
 
@@ -277,29 +288,23 @@ namespace VirtualGrid.WinFormsDemo
             OnCellClickCore(_bodyElement, index);
         }
 
-        private void OnCellValueChangedCore(IGridElement<DataGridViewElement> element, GridVector index, object value)
+        private void OnCellValueChangedCore(IGridElement<DataGridViewElementData> element, GridVector index, object value)
         {
-            while (true)
+            var hitOpt = element.Hit(index);
+            if (!hitOpt.HasValue)
+                return;
+
+            var elementKey = hitOpt.Value.Data.Key;
+            var attributes = hitOpt.Value.Data.Attributes;
+
+            var text = value as string;
+            if (text != null || value == null)
             {
-                var hitOpt = element.Hit(index);
-                if (!hitOpt.HasValue)
-                    return;
-
-                var elementKey = hitOpt.Value.Key;
-                var attributes = hitOpt.Value.Element.Attributes;
-
-                var text = value as string;
-                if (text != null || value == null)
+                var action = attributes.OnTextChangedAttribute.GetValue(elementKey);
+                if (action != null)
                 {
-                    var action = attributes.OnTextChangedAttribute.GetValue(elementKey);
-                    if (action != null)
-                    {
-                        _dispatch(elementKey, () => action(text ?? ""));
-                    }
+                    _dispatch(elementKey, () => action(text ?? ""));
                 }
-
-                element = hitOpt.Value.Element;
-                index = hitOpt.Value.Index;
             }
         }
 
@@ -323,19 +328,6 @@ namespace VirtualGrid.WinFormsDemo
             var value = cell.Value;
 
             OnCellValueChangedCore(_bodyElement, index, value);
-        }
-    }
-
-    public struct DataGridViewPartHitResult
-    {
-        public readonly GridElementKey Key;
-
-        public readonly DataGridViewCell Cell;
-
-        public DataGridViewPartHitResult(GridElementKey key, DataGridViewCell cell)
-        {
-            Key = key;
-            Cell = cell;
         }
     }
 }
