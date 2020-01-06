@@ -38,7 +38,7 @@ namespace VirtualGrid.Headers
 
         public GridHeaderHitResult? Hit(int index)
         {
-            // FIXME: ノードのキーが取れないのでヒット結果を返せない。
+            // ノードのキーが取れないのでヒット結果を返せない。
             return null;
         }
 

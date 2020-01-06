@@ -12,240 +12,6 @@ using VirtualGrid.Spreads;
 
 namespace VirtualGrid.WinFormsDemo
 {
-    public sealed class DataGridViewRowElement
-    {
-        public IGridCellAdder<AttributeBuilder> At(GridColumn column)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public sealed class GridRowElementsComponent
-        : IGridElementResolver<DataGridViewElementData>
-    {
-        private GridHeader<IGridHeaderDeltaListener> _rowHeader;
-
-        private Dictionary<object, AttributeBuilder> _items;
-
-        public DataGridViewElementData? Hit(GridVector index, GridElementKey elementKey)
-        {
-            var rowKey = elementKey.RowElementKey;
-
-            AttributeBuilder data;
-            if (!_items.TryGetValue(rowKey, out data))
-                return null;
-
-            return new DataGridViewElementData(elementKey, data);
-        }
-
-        public RowHeaderBuilder GetBuilder()
-        {
-            return new RowHeaderBuilder(_rowHeader.GetBuilder());
-        }
-
-        public struct RowHeaderBuilder
-        {
-            private GridHeaderBuilder<IGridHeaderDeltaListener> _rowHeader;
-
-            public RowHeaderBuilder(GridHeaderBuilder<IGridHeaderDeltaListener> rowHeader)
-            {
-                _rowHeader = rowHeader;
-            }
-
-            public void AddRow(object rowKey, Action<object, DataGridViewRowElement> render)
-            {
-                _rowHeader.Add(rowKey);
-            }
-
-            public void AddRowList(object rowListKey, Action<object, DataGridViewRowElement> render)
-            {
-                _rowHeader.AddNode(new GridHeaderList(rowListKey, default(IGridHeaderDeltaListener)));
-            }
-
-            public void Patch()
-            {
-                _rowHeader.Patch(0);
-            }
-        }
-
-        public struct RowListDeltaListener
-            : IGridHeaderDeltaListener
-        {
-            private GridRowElementsComponent _parent;
-
-            public RowListDeltaListener(GridRowElementsComponent parent)
-            {
-                _parent = parent;
-            }
-
-            public void OnInsert(int index, object elementKey)
-            {
-
-            }
-
-            public void OnRemove(int index)
-            {
-                throw new NotImplementedException();
-            }
-        }
-    }
-
-    public struct GridElementHitResult<T>
-    {
-        public readonly GridVector Index;
-
-        public readonly T Data;
-
-        public GridElementHitResult(GridVector index, T data)
-        {
-            Index = index;
-            Data = data;
-        }
-    }
-
-    public static class GridElementHitResult
-    {
-        public static GridElementHitResult<T> Create<T>(GridVector index, T data)
-        {
-            return new GridElementHitResult<T>(index, data);
-        }
-    }
-
-    public interface IGridElementResolver<T>
-        where T : struct
-    {
-        T? Hit(GridVector index, GridElementKey key);
-    }
-
-    // 列全体といくつかの行を占有する要素
-    public sealed class GridRowsElement<TElement, TListener>
-        : IGridElementResolver<TElement>
-        where TListener : IGridHeaderDeltaListener
-    {
-        public readonly GridHeaderList RowHeader;
-
-        private readonly Dictionary<object, TElement> _children;
-
-        private readonly Dictionary<object, GridAttributeDeltaKind> _changes =
-            new Dictionary<object, GridAttributeDeltaKind>();
-
-        private readonly Func<object, TElement> _creator;
-
-        private readonly Action<object, TElement> _patch;
-
-        private readonly Action<object, TElement> _destroyer;
-
-        private readonly Func<int, object> _getRowKey;
-
-        public GridRowsElement()
-        {
-        }
-
-        public GridHeaderListBuilder GetBuilder()
-        {
-            return RowHeader.GetBuilder();
-        }
-
-        public GridElementHitResult<TElement>? Hit(GridVector index)
-        {
-            var rowKey = _getRowKey(index.Row.Row + RowHeader.Offset);
-
-            TElement element;
-            if (!_children.TryGetValue(rowKey, out element))
-                return null;
-
-            return GridElementHitResult.Create(GridVector.Zero, element);
-        }
-
-        public void Patch()
-        {
-            var changes = _changes.ToArray();
-            _changes.Clear();
-
-            foreach (var pair in changes)
-            {
-                var rowKey = pair.Key;
-
-                switch (pair.Value)
-                {
-                    case GridAttributeDeltaKind.Add:
-                        {
-                            var element = _creator(rowKey);
-                            _children.Add(rowKey, element);
-                            break;
-                        }
-                    case GridAttributeDeltaKind.Change:
-                        {
-                            TElement element;
-                            if (!_children.TryGetValue(rowKey, out element))
-                                continue;
-
-                            _patch(rowKey, element);
-                            break;
-                        }
-                    case GridAttributeDeltaKind.Remove:
-                        {
-                            TElement element;
-                            if (!_children.TryGetValue(rowKey, out element))
-                                continue;
-
-                            _destroyer(pair.Key, element);
-                            _children.Remove(rowKey);
-                            break;
-                        }
-                    default:
-                        throw new Exception("Unknown GridAttributeDeltaKind");
-                }
-            }
-        }
-
-        public struct RowHeaderDeltaListener
-            : IGridHeaderDeltaListener
-        {
-            private GridRowsElement<TElement, TListener> _parent;
-
-            public RowHeaderDeltaListener(GridRowsElement<TElement, TListener> parent)
-            {
-                _parent = parent;
-            }
-
-            public void OnInsert(int index, object elementKey)
-            {
-                var rowKey = elementKey;
-                _parent._changes[rowKey] = GridAttributeDeltaKind.Add;
-            }
-
-            public void OnRemove(int index)
-            {
-                var rowKey = _parent._getRowKey(index);
-                _parent._changes[rowKey] = GridAttributeDeltaKind.Remove;
-            }
-        }
-    }
-
-    public struct DataGridViewElementData
-        : IGridElementResolver<DataGridViewElementData>
-    {
-        public readonly GridElementKey Key;
-
-        public readonly AttributeBuilder Attributes;
-
-        public DataGridViewElementData(GridElementKey key, AttributeBuilder attributes)
-        {
-            Key = key;
-            Attributes = attributes;
-        }
-
-        public GridElementHitResult<DataGridViewElementData>? Hit(GridVector index)
-        {
-            return null;
-        }
-    }
-
-    public sealed class GridElementProvider
-    {
-    }
-
     public sealed class DataGridViewGridProvider
     {
         internal readonly DataGridView _dataGridView;
@@ -268,13 +34,11 @@ namespace VirtualGrid.WinFormsDemo
 
         public DataGridViewBodyPart Body;
 
-        private IGridElementResolver<DataGridViewElementData> _bodyElement;
+        private IGridElementResolver<AttributeBuilder> _bodyElement;
 
-        public DataGridViewGridProvider(DataGridView inner, IGridElementResolver<DataGridViewElementData> bodyElement, Action<GridElementKey, Action> dispatch)
+        public DataGridViewGridProvider(DataGridView inner, Action<GridElementKey, Action> dispatch)
         {
             _dataGridView = inner;
-
-            _bodyElement = bodyElement;
 
             _dispatch = (elementKey, action) =>
             {
@@ -303,14 +67,19 @@ namespace VirtualGrid.WinFormsDemo
             _dataGridView.CellValueChanged -= OnCellValueChanged;
         }
 
-        private void OnCellClickCore(IGridElementResolver<DataGridViewElementData> element, GridVector index)
+        public void SetBody(IGridElementResolver<AttributeBuilder> bodyElement)
+        {
+            _bodyElement = bodyElement;
+        }
+
+        private void OnCellClickCore(IGridElementResolver<AttributeBuilder> element, GridVector index)
         {
             var hitOpt = element.Hit(index);
             if (!hitOpt.HasValue)
                 return;
 
-            var elementKey = hitOpt.Value.Data.Key;
-            var attributes = hitOpt.Value.Data.Attributes;
+            var elementKey = hitOpt.Value.Key;
+            var attributes = hitOpt.Value.Data;
 
             // チェックボックスのチェックを実装する。
             // FIXME: セルタイプを見る。
@@ -345,14 +114,14 @@ namespace VirtualGrid.WinFormsDemo
             OnCellClickCore(_bodyElement, index);
         }
 
-        private void OnCellValueChangedCore(IGridElementResolver<DataGridViewElementData> element, GridVector index, object value)
+        private void OnCellValueChangedCore(IGridElementResolver<AttributeBuilder> element, GridVector index, object value)
         {
             var hitOpt = element.Hit(index);
             if (!hitOpt.HasValue)
                 return;
 
-            var elementKey = hitOpt.Value.Data.Key;
-            var attributes = hitOpt.Value.Data.Attributes;
+            var elementKey = hitOpt.Value.Key;
+            var attributes = hitOpt.Value.Data;
 
             var text = value as string;
             if (text != null || value == null)
