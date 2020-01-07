@@ -23,6 +23,31 @@ using VirtualGrid.RowsComponents;
 
 namespace VirtualGrid.WinFormsDemo.Examples
 {
+    public sealed class GridRowElementDataProvider
+        : IGridRowElementDataProvider<AttributeBuilder>
+    {
+        private readonly IDataGridViewPart _part;
+
+        public GridRowElementDataProvider(IDataGridViewPart part)
+        {
+            _part = part;
+        }
+
+        public AttributeBuilder Create()
+        {
+            return new AttributeBuilder(_part);
+        }
+
+        public void Destroy(AttributeBuilder data)
+        {
+        }
+
+        public void Update(AttributeBuilder data)
+        {
+            data.Patch();
+        }
+    }
+
     public sealed class TodoListView
     {
         private readonly TodoListModel _model;
@@ -75,8 +100,8 @@ namespace VirtualGrid.WinFormsDemo.Examples
             _body = new GridRowsComponent<DataGridViewRowHeaderPart.RowHeaderDeltaListener, AttributeBuilder>(
                 rowHeader._rowHeader,
                 columnHeader._columnHeader,
-                () => new AttributeBuilder(_provider.Body),
-                row => _provider.Body.TryGetRowKey(RowIndex.From(row))
+                new GridRowElementDataProvider(_provider.Body),
+                _provider.Body.TryGetKey
             );
 
             _provider.SetBody(_body);

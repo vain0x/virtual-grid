@@ -60,8 +60,10 @@
     <Compile Include="Layouts\GridLayout.cs" />
     <Compile Include="Layouts\GridRow.cs" />
     <Compile Include="RowsComponents\GridRowElement.cs" />
+    <Compile Include="RowsComponents\GridRowElementData.cs" />
     <Compile Include="RowsComponents\GridRowsElement.cs" />
     <Compile Include="RowsComponents\GridRowsComponent.cs" />
+    <Compile Include="RowsComponents\GridRowElementDataProviderInterface.cs" />
     <Compile Include="Spreads\SpreadElementKey.cs" />
     <Compile Include="Spreads\SpreadLocation.cs" />
     <Compile Include="Spreads\SpreadPart.cs" />

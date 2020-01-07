@@ -16,49 +16,67 @@ namespace VirtualGrid.RowsComponents
 
         private IGridHeaderNode _columnHeader;
 
-        private Dictionary<object, TData> _items =
-            new Dictionary<object, TData>();
+        private Dictionary<GridRow, GridRowElementData<TData>> _items =
+            new Dictionary<GridRow, GridRowElementData<TData>>();
 
-        private Dictionary<object, GridRowsElement<TData>> _elements =
-            new Dictionary<object, GridRowsElement<TData>>();
+        private Func<GridVector, GridElementKey?> _hitFunc;
 
-        private Func<TData> _createFunc;
+        private List<KeyValuePair<GridRow, TData>> _diff =
+            new List<KeyValuePair<GridRow, TData>>();
 
-        private Func<int, object> _getRowKey;
+        private IGridRowElementDataProvider<TData> _dataProvider;
 
-        private List<Action> _diff =
-            new List<Action>();
-
-        public GridRowsComponent(GridHeader<TRowHeaderDeltaListener> rowHeader, IGridHeaderNode columnHeader, Func<TData> createFunc, Func<int, object> getRowKey)
+        public GridRowsComponent(GridHeader<TRowHeaderDeltaListener> rowHeader, IGridHeaderNode columnHeader, IGridRowElementDataProvider<TData> dataProvider, Func<GridVector, GridElementKey?> hitFunc)
         {
             _rowHeader = rowHeader;
             _columnHeader = columnHeader;
-            _createFunc = createFunc;
-            _getRowKey = getRowKey;
+            _dataProvider = dataProvider;
+            _hitFunc = hitFunc;
+        }
+
+        private void AddItem(GridRow row, Action<object, GridRowElement<TData>> renderFunc)
+        {
+            var data = _dataProvider.Create();
+
+            _diff.Add(Pair.Create(row, data));
+            _items.Add(row, new GridRowElementData<TData>(data, renderFunc));
+        }
+
+        private void ChangeItem(GridRow row)
+        {
+            GridRowElementData<TData> data;
+            if (!_items.TryGetValue(row, out data))
+                return;
+
+            _diff.Add(Pair.Create(row, data.Data));
+        }
+
+        private void RemoveItem(GridRow row)
+        {
+            GridRowElementData<TData> data;
+            if (!_items.TryGetValue(row, out data))
+                return;
+
+            _diff.Add(Pair.Create(row, data.Data));
+            _items.Remove(row);
         }
 
         public GridElementHitResult<TData>? Hit(GridVector index)
         {
-            var rowKey = _getRowKey(index.Row.Row);
-            if (rowKey == null)
+            var keyOpt = _hitFunc(index);
+            if (keyOpt.HasValue)
                 return null;
 
-            TData data;
-            if (!_items.TryGetValue(rowKey, out data))
+            GridRowElementData<TData> data;
+            if (!_items.TryGetValue(GridRow.From(keyOpt.Value.RowElementKey), out data))
                 return null;
 
-            var columnHit = _columnHeader.Hit(index.Column.Column);
-            if (!columnHit.HasValue)
-                return null;
-
-            var columnKey = columnHit.Value.ElementKey;
-            
-            return GridElementHitResult.Create(GridElementKey.Create(rowKey, columnKey), data);
+            return GridElementHitResult.Create(keyOpt.Value, data.Data);
         }
 
-        public RowHeaderBuilder GetBuilder()
+        public Builder GetBuilder()
         {
-            return new RowHeaderBuilder(this, _rowHeader.GetBuilder());
+            return new Builder(this, _rowHeader.GetBuilder());
         }
 
         private void Patch()
@@ -68,66 +86,37 @@ namespace VirtualGrid.RowsComponents
 
             foreach (var delta in diff)
             {
-                delta();
+                _dataProvider.Update(delta.Value);
             }
         }
 
-        public struct RowHeaderBuilder
+        public struct Builder
         {
             private GridRowsComponent<TRowHeaderDeltaListener, TData> _parent;
 
             private GridHeaderBuilder<TRowHeaderDeltaListener> _rowHeader;
 
-            public RowHeaderBuilder(GridRowsComponent<TRowHeaderDeltaListener, TData> parent, GridHeaderBuilder<TRowHeaderDeltaListener> rowHeader)
+            public Builder(GridRowsComponent<TRowHeaderDeltaListener, TData> parent, GridHeaderBuilder<TRowHeaderDeltaListener> rowHeader)
             {
                 _parent = parent;
                 _rowHeader = rowHeader;
             }
 
-            public void AddRow(object rowKey, Action<object, GridRowElement<TData>> render)
+            public void AddRow(object rowKey, Action<object, GridRowElement<TData>> renderFunc)
             {
+                var row = GridRow.From(rowKey);
+
                 _rowHeader.Add(rowKey);
-
-                var data = _parent._createFunc();
-                _parent._diff.Add(() =>
-                {
-                    render(rowKey, new GridRowElement<TData>(GridRow.From(rowKey), data));
-                });
-
-                _parent._items.Add(rowKey, data);
+                _parent.AddItem(row, renderFunc);
             }
 
-            public GridRowsElement<TData> AddRowList(object rowListKey, Action<object, GridRowElement<TData>> render)
+            public GridRowsElement<TData> AddRowList(object rowListKey, Action<object, GridRowElement<TData>> renderFunc)
             {
-                var parent = _parent;
-
                 var rowList = _rowHeader.AddList(rowListKey);
                 var element = new GridRowsElement<TData>(
                     rowList,
                     _parent._columnHeader,
-                    rowKey =>
-                    {
-                        var data = parent._createFunc();
-                        parent._diff.Add(() =>
-                        {
-                            render(rowKey, new GridRowElement<TData>(GridRow.From(rowKey), data));
-                        });
-                        parent._items.Add(rowKey, data);
-                        return data;
-                    },
-                    (rowKey, data) =>
-                    {
-                        parent._diff.Add(() =>
-                        {
-                            render(rowKey, new GridRowElement<TData>(GridRow.From(rowKey), data));
-                        });
-                    },
-                    (rowKey, data) =>
-                    {
-                        parent._items.Remove(rowKey);
-                    },
-                    _parent._getRowKey,
-                    _parent.Patch
+                    new ElementListener(_parent, renderFunc)
                 );
                 return element;
             }
@@ -135,6 +124,46 @@ namespace VirtualGrid.RowsComponents
             public void Patch()
             {
                 _rowHeader.Patch(0);
+                _parent.Patch();
+            }
+        }
+
+        public sealed class ElementListener
+            : IGridRowsElementListener
+        {
+            private GridRowsComponent<TRowHeaderDeltaListener, TData> _parent;
+
+            private Action<object, GridRowElement<TData>> _renderFunc;
+
+            public ElementListener(GridRowsComponent<TRowHeaderDeltaListener, TData> parent, Action<object, GridRowElement<TData>> renderFunc)
+            {
+                _parent = parent;
+                _renderFunc = renderFunc;
+            }
+
+            public void OnAdd(object rowKey)
+            {
+                var row = GridRow.From(rowKey);
+
+                _parent.AddItem(row, _renderFunc);
+            }
+
+            public void OnChange(object rowKey)
+            {
+                var row = GridRow.From(rowKey);
+
+                _parent.ChangeItem(row);
+            }
+
+            public void OnRemove(object rowKey)
+            {
+                var row = GridRow.From(rowKey);
+
+                _parent.RemoveItem(row);
+            }
+
+            public void Patch()
+            {
                 _parent.Patch();
             }
         }
