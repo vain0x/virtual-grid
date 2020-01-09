@@ -36,6 +36,12 @@ namespace VirtualGrid.Headers
             return _builder;
         }
 
+        public GridHeaderHitResult? Hit(int index)
+        {
+            // ノードのキーが取れないのでヒット結果を返せない。
+            return null;
+        }
+
         public void SetOffset(int offset)
         {
             if (Offset != offset)

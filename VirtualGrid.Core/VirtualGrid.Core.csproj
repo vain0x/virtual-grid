@@ -47,9 +47,11 @@
     <Compile Include="DebugString.cs" />
     <Compile Include="DefaultDictionary.cs" />
     <Compile Include="GridElementKey.cs" />
+    <Compile Include="GridElementResolverInterface.cs" />
     <Compile Include="Headers\GridHeaderBuilder.cs" />
     <Compile Include="Headers\GridHeaderDelta.cs" />
     <Compile Include="Headers\GridHeaderDeltaKind.cs" />
+    <Compile Include="Headers\GridHeaderHitResult.cs" />
     <Compile Include="Headers\GridHeaderList.cs" />
     <Compile Include="Headers\GridHeaderListBuilder.cs" />
     <Compile Include="Headers\GridHeaderNode.cs" />
@@ -57,6 +59,11 @@
     <Compile Include="Layouts\GridColumn.cs" />
     <Compile Include="Layouts\GridLayout.cs" />
     <Compile Include="Layouts\GridRow.cs" />
+    <Compile Include="RowsComponents\GridRowElement.cs" />
+    <Compile Include="RowsComponents\GridRowElementData.cs" />
+    <Compile Include="RowsComponents\GridRowsElement.cs" />
+    <Compile Include="RowsComponents\GridRowsComponent.cs" />
+    <Compile Include="RowsComponents\GridRowElementDataProviderInterface.cs" />
     <Compile Include="Spreads\SpreadElementKey.cs" />
     <Compile Include="Spreads\SpreadLocation.cs" />
     <Compile Include="Spreads\SpreadPart.cs" />

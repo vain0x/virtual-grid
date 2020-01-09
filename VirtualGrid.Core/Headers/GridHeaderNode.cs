@@ -11,6 +11,8 @@ namespace VirtualGrid.Headers
 
         int TotalCount { get; }
 
+        GridHeaderHitResult? Hit(int index);
+
         void SetOffset(int offset);
 
         GridHeaderNode Create(int offset);
@@ -66,6 +68,17 @@ namespace VirtualGrid.Headers
             {
                 return _innerOpt != null ? _innerOpt.TotalCount : 1;
             }
+        }
+
+        public GridHeaderHitResult? Hit(int index)
+        {
+            if (_innerOpt != null)
+                return _innerOpt.Hit(index);
+
+            if (index != 0)
+                return null;
+
+            return GridHeaderHitResult.Create(this, 0);
         }
 
         public void SetOffset(int offset)

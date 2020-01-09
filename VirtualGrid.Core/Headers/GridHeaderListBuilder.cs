@@ -47,6 +47,11 @@ namespace VirtualGrid.Headers
             }
         }
 
+        public GridHeaderHitResult? Hit(int index)
+        {
+            return _inner.Hit(index);
+        }
+
         public void Insert(int index, object elementKey)
         {
             _diff.Add(GridHeaderDelta.NewInsert(index, elementKey));

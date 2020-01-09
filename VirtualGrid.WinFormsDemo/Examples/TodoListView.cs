@@ -4,20 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using VirtualGrid.Headers;
+using System.Windows.Forms;
 using VirtualGrid.Layouts;
-using VirtualGrid.Rendering;
-using VirtualGrid.Spreads;
-using RowHeaderLayout = VirtualGrid.Layouts.GridLayout<
-    VirtualGrid.WinFormsDemo.DataGridViewGridProvider,
-    VirtualGrid.WinFormsDemo.DataGridViewRowHeaderPart.RowHeaderDeltaListener,
-    VirtualGrid.WinFormsDemo.DataGridViewRowHeaderPart.ColumnHeaderDeltaListener
->;
-using ColumnHeaderLayout = VirtualGrid.Layouts.GridLayout<
-    VirtualGrid.WinFormsDemo.DataGridViewGridProvider,
-    VirtualGrid.WinFormsDemo.DataGridViewColumnHeaderPart.RowHeaderDeltaListener,
-    VirtualGrid.WinFormsDemo.DataGridViewColumnHeaderPart.ColumnHeaderDeltaListener
->;
+using VirtualGrid.RowsComponents;
+using VirtualGrid.WinFormsDemo.Provider.RowsComponents;
 
 namespace VirtualGrid.WinFormsDemo.Examples
 {
@@ -27,47 +17,11 @@ namespace VirtualGrid.WinFormsDemo.Examples
 
         private readonly DataGridViewGridProvider _provider;
 
-        private readonly SpreadLayout<RowHeaderLayout, ColumnHeaderLayout> _layout;
+        private readonly DataGridViewSpreadLayout _layout;
 
-        public TodoListView(TodoListModel model, DataGridViewGridProvider provider)
-        {
-            _model = model;
-            _provider = provider;
+        private readonly DataGridViewRowsComponent _component;
 
-            var rhrh = "KEY_SPREAD_ROW_HEADER_ROW_HEADER";
-            var rhch = "KEY_SPREAD_ROW_HEADER_COLUMN_HEADER";
-            var chrh = "KEY_SPREAD_COLUMN_HEADER_ROW_HEADER";
-            var chch = "KEY_SPREAD_COLUMN_HEADER_COLUMN_HEADER";
-
-            var rowHeader = new RowHeaderLayout(
-                new GridHeader<DataGridViewRowHeaderPart.RowHeaderDeltaListener>(
-                    rhrh,
-                    new DataGridViewRowHeaderPart.RowHeaderDeltaListener(provider)
-                ),
-                new GridHeader<DataGridViewRowHeaderPart.ColumnHeaderDeltaListener>(
-                    rhch,
-                    new DataGridViewRowHeaderPart.ColumnHeaderDeltaListener(provider)
-                ));
-
-            var columnHeader = new ColumnHeaderLayout(
-                new GridHeader<DataGridViewColumnHeaderPart.RowHeaderDeltaListener>(
-                    chrh,
-                    new DataGridViewColumnHeaderPart.RowHeaderDeltaListener(provider)
-                ),
-                new GridHeader<DataGridViewColumnHeaderPart.ColumnHeaderDeltaListener>(
-                    chch,
-                    new DataGridViewColumnHeaderPart.ColumnHeaderDeltaListener(provider)
-                ));
-
-            _layout = SpreadLayout.Create(
-                rowHeader,
-                columnHeader
-            );
-        }
-
-        private GridHeaderList _itemRows;
-
-        private GridRow _footerRow;
+        private GridRowsElement<AttributeBuilder> _items;
 
         private GridColumn
             _checkBoxColumn,
@@ -75,11 +29,21 @@ namespace VirtualGrid.WinFormsDemo.Examples
             _addButtonColumn,
             _deleteButtonColumn;
 
+        public TodoListView(TodoListModel model, DataGridView dataGridView, Action<GridElementKey, Action> dispatch)
+        {
+            _model = model;
+
+            _provider = new DataGridViewGridProvider(dataGridView, dispatch);
+
+            _layout = new DataGridViewSpreadLayout(_provider);
+
+            _component = new DataGridViewRowsComponent(_layout, _provider);
+        }
+
         public void Initialize()
         {
             InitializeColumnHeader();
             InitializeRowHeader();
-            InitializeBody();
 
             Update();
         }
@@ -95,7 +59,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
             _deleteButtonColumn = l.AddColumn("KEY_DELETE_BUTTON_COLUMN");
             l.Patch();
 
-            var a = new AttributeBuilder(_provider, _provider.ColumnHeader);
+            var a = new AttributeBuilder(_provider.ColumnHeader);
             a.At(row, _checkBoxColumn)
                 .AddText("選択");
 
@@ -112,131 +76,82 @@ namespace VirtualGrid.WinFormsDemo.Examples
 
         private void InitializeRowHeader()
         {
-            var l = _layout.RowHeader.GetBuilder();
-            _itemRows = l.AddRowList("KEY_ITEM_ROWS");
-            _footerRow = l.AddRow("KEY_FOOTER_ROW");
-            l.Patch();
+            var rows = _component.GetBuilder();
+            _items = rows.AddRowList("KEY_ITEM_ROWS", (item, row) =>
+            {
+                RenderItem((TodoItem)item, row);
+            });
+
+            rows.AddRow("KEY_FOOTER_ROW", (_key, row) =>
+            {
+                RenderFooter(row);
+            });
+            rows.Patch();
         }
 
-        public void InitializeBody()
+        private void RenderItem(TodoItem item, GridRowElement<AttributeBuilder> row)
         {
-            RenderFooterRow();
-        }
-
-        private void RenderItem(GridRow row, TodoItem item)
-        {
-            var a = TouchElement(item);
-
-            a.At(row, _checkBoxColumn)
+            row.At(_checkBoxColumn)
                 .AddCheckBox(item.IsDone)
                 .OnCheckChanged(isDone =>
                 {
                     _model.SetIsDone(item, isDone);
                 });
 
-            a.At(row, _textColumn)
+            row.At(_textColumn)
                 .AddEdit(item.Text)
                 .OnTextChanged(text =>
                 {
                     _model.SetItemText(item, text);
                 });
 
-            a.At(row, _addButtonColumn)
+            row.At(_addButtonColumn)
                 .AddButton("上に追加")
                 .OnClick(() =>
                 {
                     _model.InsertBefore(item);
                 });
 
-            a.At(row, _deleteButtonColumn)
+            row.At(_deleteButtonColumn)
                 .AddButton("削除")
                 .OnClick(() =>
                 {
                     _model.Remove(item);
                 });
-            a.Patch();
         }
 
-        private void RenderFooterRow()
+        private void RenderFooter(GridRowElement<AttributeBuilder> footer)
         {
-            var footer = new AttributeBuilder(_provider, _provider.Body);
-            footer.Attach();
-
-            footer.At(_footerRow, _textColumn)
+            footer.At(_textColumn)
                 .AddText("");
 
-            footer.At(_footerRow, _addButtonColumn)
+            footer.At(_addButtonColumn)
                 .AddButton("上に追加")
                 .OnClick(() =>
                 {
                     _model.InsertLast();
                 });
-            footer.Patch();
         }
-
-        #region items
-
-        private Dictionary<TodoItem, AttributeBuilder> _items =
-            new Dictionary<TodoItem, AttributeBuilder>();
-
-        private AttributeBuilder TouchElement(TodoItem item)
-        {
-            AttributeBuilder a;
-            if (!_items.TryGetValue(item, out a))
-            {
-                a = new AttributeBuilder(_provider, _provider.Body);
-                _items.Add(item, a);
-                a.Attach();
-            }
-
-            return a;
-        }
-
-        private void DestroyElement(TodoItem item)
-        {
-            AttributeBuilder a;
-            if (_items.TryGetValue(item, out a))
-            {
-                a.Detach();
-            }
-            _items.Remove(item);
-        }
-
-        #endregion
 
         private void UpdateItems()
         {
-            var itemRows = _itemRows.GetBuilder();
-            foreach (var delta in _model._dirtyItems)
+            var items = _items.GetBuilder();
+            foreach (var delta in _model.DrainDiff())
             {
                 if (delta.Kind == "INSERT")
                 {
-                    itemRows.Insert(delta.Index, delta.Item);
+                    items.Insert(delta.Index, delta.Item);
                 }
                 else if (delta.Kind == "REMOVE")
                 {
-                    itemRows.RemoveAt(delta.Index);
+                    items.RemoveAt(delta.Index, delta.Item);
                 }
                 else
                 {
-                    // Pass.
+                    items.Update(delta.Item);
                 }
             }
-            itemRows.Patch();
-
-            foreach (var delta in _model._dirtyItems.ToArray())
-            {
-                if (delta.Kind == "REMOVE")
-                {
-                    DestroyElement(delta.Item);
-                }
-                else
-                {
-                    RenderItem(GridRow.From(delta.Item), delta.Item);
-                }
-            }
-
-            _model._dirtyItems.Clear();
+            items.Patch();
         }
 
         public void Update()

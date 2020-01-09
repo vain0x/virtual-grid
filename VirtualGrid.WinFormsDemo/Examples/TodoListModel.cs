@@ -27,7 +27,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
         private readonly List<TodoItem> _items =
             new List<TodoItem>();
 
-        public readonly List<TodoListDelta> _dirtyItems =
+        private readonly List<TodoListDelta> _diff =
             new List<TodoListDelta>();
 
         public IReadOnlyList<TodoItem> Items
@@ -59,7 +59,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
 
             var newItem = new TodoItem();
             _items.Insert(index, newItem);
-            _dirtyItems.Add(new TodoListDelta("INSERT", newItem, index));
+            _diff.Add(new TodoListDelta("INSERT", newItem, index));
 
             EnsureLastBlank();
         }
@@ -68,7 +68,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
         {
             var newItem = new TodoItem();
             _items.Add(newItem);
-            _dirtyItems.Add(new TodoListDelta("INSERT", newItem, _items.Count - 1));
+            _diff.Add(new TodoListDelta("INSERT", newItem, _items.Count - 1));
 
             EnsureLastBlank();
         }
@@ -80,7 +80,7 @@ namespace VirtualGrid.WinFormsDemo.Examples
                 return;
 
             _items.RemoveAt(index);
-            _dirtyItems.Add(new TodoListDelta("REMOVE", item, index));
+            _diff.Add(new TodoListDelta("REMOVE", item, index));
 
             EnsureLastBlank();
         }
@@ -88,13 +88,13 @@ namespace VirtualGrid.WinFormsDemo.Examples
         public void SetIsDone(TodoItem item, bool isDone)
         {
             item.IsDone = isDone;
-            _dirtyItems.Add(new TodoListDelta("CHANGE", item, -1));
+            _diff.Add(new TodoListDelta("CHANGE", item, -1));
         }
 
         public void SetItemText(TodoItem item, string text)
         {
             item.Text = text;
-            _dirtyItems.Add(new TodoListDelta("CHANGE", item, -1));
+            _diff.Add(new TodoListDelta("CHANGE", item, -1));
 
             EnsureLastBlank();
         }
@@ -108,6 +108,13 @@ namespace VirtualGrid.WinFormsDemo.Examples
             {
                 InsertLast();
             }
+        }
+
+        public TodoListDelta[] DrainDiff()
+        {
+            var diff = _diff.ToArray();
+            _diff.Clear();
+            return diff;
         }
     }
 

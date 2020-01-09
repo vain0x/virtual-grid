@@ -47,7 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Provider\AttributeBuilder.cs" />
-    <Compile Include="Provider\Attributes\ElementAttribute.cs" />
     <Compile Include="Provider\Attributes\IsCheckedAttributePolicy.cs" />
     <Compile Include="Provider\Attributes\ReadOnlyAttributePolicy.cs" />
     <Compile Include="Provider\DataGridViewBodyPart.cs" />
@@ -85,6 +84,9 @@
     <Compile Include="Provider\EventAttributeProvider.cs" />
     <Compile Include="Provider\DataGridViewRowHeaderPart.cs" />
     <Compile Include="Provider\DataGridViewPartInterface.cs" />
+    <Compile Include="Provider\RowsComponents\DataGridViewRowElementDataProvider.cs" />
+    <Compile Include="Provider\RowsComponents\DataGridViewRowsComponent.cs" />
+    <Compile Include="Provider\RowsComponents\DataGridViewSpreadLayout.cs" />
     <EmbeddedResource Include="MainMenuForm.resx">
       <DependentUpon>MainMenuForm.cs</DependentUpon>
     </EmbeddedResource>

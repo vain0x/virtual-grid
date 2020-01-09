@@ -30,13 +30,11 @@ namespace VirtualGrid.WinFormsDemo.Examples
             _dataGridView.AllowUserToAddRows = false;
             Controls.Add(_dataGridView);
 
-            var gridProvider = new DataGridViewGridProvider(_dataGridView, (elementKey, action) =>
+            _view = new TodoListView(_model, _dataGridView, (elementKey, action) =>
             {
                 action();
                 BeginInvoke(new Action(_view.Update));
             });
-
-            _view = new TodoListView(_model, gridProvider);
         }
 
         protected override void OnLoad(EventArgs e)

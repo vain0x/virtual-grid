@@ -6,9 +6,9 @@ namespace VirtualGrid.Layouts
         where TRowHeaderDeltaListener : IGridHeaderDeltaListener
         where TColumnHeaderDeltaListener : IGridHeaderDeltaListener
     {
-        internal readonly GridHeader<TRowHeaderDeltaListener> _rowHeader;
+        public readonly GridHeader<TRowHeaderDeltaListener> _rowHeader;
 
-        internal readonly GridHeader<TColumnHeaderDeltaListener> _columnHeader;
+        public readonly GridHeader<TColumnHeaderDeltaListener> _columnHeader;
 
         public GridLayout(GridHeader<TRowHeaderDeltaListener> rowHeader, GridHeader<TColumnHeaderDeltaListener> columnHeader)
         {

@@ -47,5 +47,13 @@ namespace VirtualGrid.WinFormsDemo
             var columnKey = _dataGridView.Columns[index.Column.Column].Tag;
             return GridElementKey.Create(rowKey, columnKey);
         }
+
+        public object TryGetRowKey(RowIndex row)
+        {
+            if (row >= _dataGridView.RowCount)
+                return null;
+
+            return _dataGridView.Rows[row.Row].Tag;
+        }
     }
 }
